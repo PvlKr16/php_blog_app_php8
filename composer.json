@@ -1,0 +1,59 @@
+{
+    "name": "blog-app/symfony-mongodb",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-mongodb": "*",
+        "symfony/runtime": "^6.4",
+        "symfony/framework-bundle": "^6.4",
+        "symfony/console": "^6.4",
+        "symfony/dotenv": "^6.4",
+        "symfony/flex": "^2.4",
+        "symfony/form": "^6.4",
+        "symfony/security-bundle": "^6.4",
+        "symfony/twig-bundle": "^6.4",
+        "symfony/validator": "^6.4",
+        "symfony/yaml": "^6.4",
+        "doctrine/mongodb-odm": "^2.6",
+        "doctrine/mongodb-odm-bundle": "^5.0",
+        "twig/twig": "^3.0",
+        "symfony/password-hasher": "^6.4"
+    },
+    "require-dev": {
+        "symfony/maker-bundle": "^1.52"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true,
+        "allow-plugins": {
+            "symfony/flex": true,
+            "symfony/runtime": true
+        }
+    },
+    "scripts": {
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd",
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ]
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": false,
+            "require": "6.4.*"
+        }
+    }
+}

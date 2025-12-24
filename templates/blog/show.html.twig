@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ blog.title }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ blog.title }}</h1>
+                <p class="text-muted">
+                    Автор: <strong>{{ blog.author.username }}</strong><br>
+                    Создано: {{ blog.createdAt|date('d.m.Y H:i') }}
+                    {% if blog.updatedAt > blog.createdAt %}
+                        <br>Обновлено: {{ blog.updatedAt|date('d.m.Y H:i') }}
+                    {% endif %}
+                </p>
+                <hr>
+                <div class="blog-content">
+                    {{ blog.content|nl2br }}
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>
+                
+                {% if app.user and app.user == blog.author %}
+                    <a href="{{ path('blog_edit', {'id': blog.id}) }}" class="btn btn-warning">Редактировать</a>
+                    
+                    <form method="post" action="{{ path('blog_delete', {'id': blog.id}) }}" style="display: inline-block;" onsubmit="return confirm('Вы уверены, что хотите удалить этот блог?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
+                        <button class="btn btn-danger">Удалить</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

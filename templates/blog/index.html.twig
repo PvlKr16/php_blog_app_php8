@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Все блоги{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Все блоги</h1>
+            {% if app.user %}
+                <a href="{{ path('blog_new') }}" class="btn btn-primary">Создать новый блог</a>
+            {% endif %}
+        </div>
+
+        {% if blogs is empty %}
+            <div class="alert alert-info">
+                Блогов пока нет. {% if app.user %}<a href="{{ path('blog_new') }}">Создайте первый!</a>{% endif %}
+            </div>
+        {% else %}
+            <div class="row">
+                {% for blog in blogs %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ blog.title }}</h5>
+                                <p class="card-text">{{ blog.content|length > 150 ? blog.content|slice(0, 150) ~ '...' : blog.content }}</p>
+                                <p class="text-muted small">
+                                    Автор: {{ blog.author.username }}<br>
+                                    Создано: {{ blog.createdAt|date('d.m.Y H:i') }}
+                                </p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="{{ path('blog_show', {'id': blog.id}) }}" class="btn btn-sm btn-primary">Читать</a>
+                                {% if app.user and app.user == blog.author %}
+                                    <a href="{{ path('blog_edit', {'id': blog.id}) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
