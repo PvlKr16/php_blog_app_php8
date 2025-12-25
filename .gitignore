@@ -32,3 +32,4 @@ Thumbs.db
 
 # Сессии
 var/sessions/*
+/.env.dev

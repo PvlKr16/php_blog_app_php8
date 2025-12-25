@@ -64,11 +64,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @see PasswordAuthenticatedUserInterface
+     * Возвращает хешированный пароль для аутентификации
+     */
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
+    public function getPasswordHash(): ?string
+    {
+        return $this->password;
+    }
+
+    /**
+     * Устанавливает хешированный пароль
+     * ВАЖНО: Пароль должен быть хеширован перед вызовом этого метода!
+     */
     public function setPassword(string $password): static
     {
         $this->password = $password;
