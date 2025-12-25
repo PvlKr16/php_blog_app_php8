@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Управление темами{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Управление темами</h1>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Добавить новую тему</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ path('category_create') }}">
+                        <div class="input-group">
+                            <input type="text" name="name" class="form-control" placeholder="Название темы" required>
+                            <button type="submit" class="btn btn-primary">Добавить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Существующие темы</h5>
+                </div>
+                <div class="card-body">
+                    {% if categories is empty %}
+                        <p class="text-muted">Тем пока нет</p>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for category in categories %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ category.name }}
+                                    <form method="post" action="{{ path('category_delete', {'id': category.id}) }}" style="display: inline;" onsubmit="return confirm('Удалить эту тему?');">
+                                        <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

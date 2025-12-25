@@ -25,6 +25,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[MongoDB\Field(type: 'collection')]
     private array $roles = [];
 
+    #[MongoDB\Field(type: 'bool')]
+    private bool $isAdmin = false;
+
     #[MongoDB\Field(type: 'date')]
     private \DateTime $createdAt;
 
@@ -76,13 +79,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         $roles[] = 'ROLE_USER';
-        return array_unique($roles);
-    }
 
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-        return $this;
+        if ($this->isAdmin) {
+            $roles[] = 'ROLE_ADMIN';
+        }
+
+        return array_unique($roles);
     }
 
     public function eraseCredentials(): void
@@ -93,6 +95,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return $this->email ?? '';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->isAdmin;
+    }
+
+    public function setIsAdmin(bool $isAdmin): static
+    {
+        $this->isAdmin = $isAdmin;
+        if ($isAdmin) {
+            $this->roles = array_unique(array_merge($this->roles, ['ROLE_ADMIN']));
+        }
+        return $this;
     }
 
     public function getCreatedAt(): \DateTime

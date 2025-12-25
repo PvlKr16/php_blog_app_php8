@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Document\Blog;
+use App\Document\Category;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -10,6 +11,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
 
 class BlogType extends AbstractType
 {
@@ -26,6 +28,16 @@ class BlogType extends AbstractType
                     ]),
                 ],
                 'label' => 'Заголовок',
+                'attr' => ['class' => 'form-control'],
+            ])
+            ->add('category', DocumentType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'label' => 'Тема',
+                'placeholder' => 'Выберите тему',
+                'constraints' => [
+                    new NotBlank(['message' => 'Пожалуйста, выберите тему']),
+                ],
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('content', TextareaType::class, [

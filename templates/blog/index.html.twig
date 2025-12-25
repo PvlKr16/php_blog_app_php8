@@ -23,6 +23,7 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">{{ blog.title }}</h5>
+                                <span class="badge bg-primary">{{ blog.category ? blog.category.name : 'Без темы' }}</span>
                                 <p class="card-text">{{ blog.content|length > 150 ? blog.content|slice(0, 150) ~ '...' : blog.content }}</p>
                                 <p class="text-muted small">
                                     Автор: {{ blog.author.username }}<br>

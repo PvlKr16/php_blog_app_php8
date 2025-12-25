@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Document\Blog;
+use App\Document\Category;
 use App\Form\BlogType;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,6 +36,7 @@ class BlogController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $blog->setAuthor($this->getUser());
             
             $dm->persist($blog);
@@ -71,6 +73,7 @@ class BlogController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
             $blog->setUpdatedAt(new \DateTime());
             $dm->flush();
 

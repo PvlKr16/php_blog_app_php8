@@ -16,6 +16,9 @@ class Blog
     #[MongoDB\Field(type: 'string')]
     private ?string $content = null;
 
+    #[MongoDB\ReferenceOne(targetDocument: Category::class, storeAs: 'id')]
+    private ?Category $category = null;
+
     #[MongoDB\ReferenceOne(targetDocument: User::class, storeAs: 'id')]
     private ?User $author = null;
 
@@ -66,6 +69,17 @@ class Blog
     public function setAuthor(?User $author): static
     {
         $this->author = $author;
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): static
+    {
+        $this->category = $category;
         return $this;
     }
 

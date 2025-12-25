@@ -10,6 +10,7 @@
                 <h1 class="card-title">{{ blog.title }}</h1>
                 <p class="text-muted">
                     Автор: <strong>{{ blog.author.username }}</strong><br>
+                    <br>Тема: <strong>{{ blog.category ? blog.category.name : 'Без темы' }}</strong>
                     Создано: {{ blog.createdAt|date('d.m.Y H:i') }}
                     {% if blog.updatedAt > blog.createdAt %}
                         <br>Обновлено: {{ blog.updatedAt|date('d.m.Y H:i') }}
