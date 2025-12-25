@@ -20,11 +20,11 @@ security:
         form_login:
           login_path: login
           check_path: login
-          default_target_path: blog_list
+          default_target_path: home
           enable_csrf: true
         logout:
           path: logout
-          target: blog_list
+          target: home
         entry_point: form_login
         remember_me: # ДОБАВЬТЕ ЭТИ СТРОКИ
           secret: '%kernel.secret%'
