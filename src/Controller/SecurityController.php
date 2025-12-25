@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use App\Service\FileUploader;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class SecurityController extends AbstractController
 {
@@ -18,7 +20,8 @@ class SecurityController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
-        DocumentManager $dm
+        DocumentManager $dm,
+        FileUploader $fileUploader
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('blog_list');
@@ -35,6 +38,19 @@ class SecurityController extends AbstractController
                     $form->get('password')->getData()
                 )
             );
+
+            // Обработка аватара
+            /** @var UploadedFile $avatarFile */
+            $avatarFile = $form->get('avatar')->getData();
+
+            if ($avatarFile) {
+                try {
+                    $avatarFileName = $fileUploader->upload($avatarFile);
+                    $user->setAvatar($avatarFileName);
+                } catch (\Exception $e) {
+                    $this->addFlash('warning', 'Не удалось загрузить аватар, но регистрация прошла успешно.');
+                }
+            }
 
             $dm->persist($user);
             $dm->flush();

@@ -13,6 +13,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Image;
 
 class RegistrationFormType extends AbstractType
 {
@@ -36,6 +39,34 @@ class RegistrationFormType extends AbstractType
                     new Email(['message' => 'Введите корректный email']),
                 ],
                 'label' => 'Email',
+            ])
+            ->add('avatar', FileType::class, [
+                'label' => 'Аватар (необязательно)',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new Image([
+                        'maxSize' => '5M',
+                        'maxSizeMessage' => 'Файл слишком большой ({{ size }} {{ suffix }}). Максимум {{ limit }} {{ suffix }}.',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/jpg',
+                            'image/png',
+                            'image/gif',
+                            'image/webp',
+                        ],
+                        'mimeTypesMessage' => 'Загрузите изображение в формате JPG, PNG, GIF или WEBP',
+                        'minWidth' => 50,
+                        'minHeight' => 50,
+                        'minWidthMessage' => 'Изображение слишком маленькое ({{ width }}px). Минимум {{ min_width }}px.',
+                        'minHeightMessage' => 'Изображение слишком маленькое ({{ height }}px). Минимум {{ min_height }}px.',
+                    ])
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => 'image/jpeg,image/jpg,image/png,image/gif,image/webp',
+                ],
+                'help' => 'JPG, PNG, GIF, WEBP. Макс. 5 МБ. Рекомендуется 200x200px - 1000x1000px',
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,

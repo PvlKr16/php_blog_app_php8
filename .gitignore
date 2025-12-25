@@ -33,3 +33,6 @@ Thumbs.db
 # Сессии
 var/sessions/*
 /.env.dev
+
+public/uploads/avatars/*
+!public/uploads/avatars/.gitkeep

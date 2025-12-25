@@ -38,7 +38,12 @@
                             <a class="nav-link" href="{{ path('blog_new') }}">Создать блог</a>
                         </li>
                         <li class="nav-item">
-                            <span class="nav-link">Привет, {{ app.user.username }}!</span>
+                            <span class="nav-link">
+                                {% if app.user.avatar %}
+                                    <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px; vertical-align: middle;">
+                                {% endif %}
+                                Привет, {{ app.user.username }}!
+                            </span>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('logout') }}">Выход</a>

@@ -22,6 +22,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[MongoDB\Field(type: 'string')]
     private ?string $username = null;
 
+    #[MongoDB\Field(type: 'string')]
+    private ?string $avatar = null;
+
     #[MongoDB\Field(type: 'collection')]
     private array $roles = [];
 
@@ -121,6 +124,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($isAdmin) {
             $this->roles = array_unique(array_merge($this->roles, ['ROLE_ADMIN']));
         }
+        return $this;
+    }
+
+    public function getAvatar(): ?string
+    {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?string $avatar): static
+    {
+        $this->avatar = $avatar;
         return $this;
     }
 
