@@ -9,6 +9,32 @@
 
         <div class="card">
             <div class="card-body">
+                {% if existingAttachments is not empty %}
+                    <div class="mb-4">
+                        <h5>Текущие файлы ({{ existingAttachments|length }})</h5>
+                        <div class="list-group">
+                            {% for attachment in existingAttachments %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span style="font-size: 20px;">{{ attachment.icon }}</span>
+                                        <a href="/uploads/attachments/{{ attachment.filename }}" target="_blank" class="ms-2">
+                                            {{ attachment.originalFilename }}
+                                        </a>
+                                        <small class="text-muted ms-2">({{ attachment.fileSizeFormatted }})</small>
+                                    </div>
+                                    <form method="post" action="{{ path('attachment_delete', {'id': attachment.id}) }}" style="display: inline;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить файл?');">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <hr class="my-4">
+                    </div>
+                {% endif %}
+
                 {{ form_start(form) }}
                     {{ form_row(form.title) }}
                     {{ form_row(form.content) }}

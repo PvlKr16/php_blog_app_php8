@@ -14,6 +14,10 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\Count;
+use Symfony\Component\Validator\Constraints\File;
 
 class BlogType extends AbstractType
 {
@@ -84,6 +88,49 @@ class BlogType extends AbstractType
                     'class' => 'form-control',
                     'rows' => 10,
                 ],
+            ])
+            ->add('attachments', FileType::class, [
+                'label' => 'Прикрепить файлы (необязательно)',
+                'mapped' => false,
+                'required' => false,
+                'multiple' => true,
+                'constraints' => [
+                    new Count([
+                        'max' => 5,
+                        'maxMessage' => 'Можно загрузить максимум {{ limit }} файлов',
+                    ]),
+                    new All([
+                        new File([
+                            'maxSize' => '20M',
+                            'maxSizeMessage' => 'Файл слишком большой ({{ size }} {{ suffix }}). Максимум {{ limit }} {{ suffix }}.',
+                            'mimeTypes' => [
+                                // Изображения
+                                'image/jpeg',
+                                'image/jpg',
+                                'image/png',
+                                'image/gif',
+                                'image/webp',
+                                // Аудио
+                                'audio/mpeg',
+                                'audio/mp3',
+                                'audio/wav',
+                                'audio/ogg',
+                                // Документы
+                                'application/pdf',
+                                'application/msword',
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                'text/plain',
+                                'text/markdown',
+                            ],
+                            'mimeTypesMessage' => 'Разрешены только: изображения (JPG, PNG, GIF, WEBP), аудио (MP3, WAV, OGG), документы (PDF, DOC, DOCX, TXT, MD)',
+                        ])
+                    ])
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'accept' => 'image/*,audio/*,.pdf,.doc,.docx,.txt,.md',
+                ],
+                'help' => 'Изображения (JPG, PNG, GIF, WEBP) - макс. 10 МБ. Аудио (MP3, WAV, OGG) - макс. 20 МБ. Документы (PDF, DOC, DOCX, TXT, MD) - макс. 10 МБ. До 5 файлов.',
             ]);
     }
 

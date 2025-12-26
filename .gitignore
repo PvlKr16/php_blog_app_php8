@@ -36,3 +36,5 @@ var/sessions/*
 
 public/uploads/avatars/*
 !public/uploads/avatars/.gitkeep
+public/uploads/attachments/*
+!public/uploads/attachments/.gitkeep

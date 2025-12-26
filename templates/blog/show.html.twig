@@ -27,6 +27,31 @@
                 <div class="blog-content">
                     {{ blog.content|nl2br }}
                 </div>
+                {% if attachments is not empty %}
+                    <hr>
+                    <h5>📎 Прикреплённые файлы ({{ attachments|length }})</h5>
+                    <div class="list-group">
+                        {% for attachment in attachments %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span style="font-size: 24px;">{{ attachment.icon }}</span>
+                                    <a href="/uploads/attachments/{{ attachment.filename }}" target="_blank" class="ms-2">
+                                        {{ attachment.originalFilename }}
+                                    </a>
+                                    <small class="text-muted ms-2">({{ attachment.fileSizeFormatted }})</small>
+                                </div>
+                                {% if app.user and app.user == blog.author %}
+                                    <form method="post" action="{{ path('attachment_delete', {'id': attachment.id}) }}" style="display: inline;">
+                                        <input type="hidden" name="_method" value="DELETE">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить файл?');">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
             <div class="card-footer">
                 <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>

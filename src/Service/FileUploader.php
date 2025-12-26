@@ -120,4 +120,54 @@ class FileUploader
     {
         return $this->avatarsDirectory;
     }
+
+    public function uploadAttachment(UploadedFile $file, string $subdirectory = 'attachments'): array
+    {
+        // Получаем данные ДО перемещения файла
+        $originalFilename = $file->getClientOriginalName();
+        $mimeType = $file->getMimeType();
+        $fileSize = $file->getSize();
+
+        $safeFilename = $this->slugger->slug(pathinfo($originalFilename, PATHINFO_FILENAME));
+        $fileName = $safeFilename.'-'.uniqid().'.'.$file->guessExtension();
+
+        $targetDirectory = $this->avatarsDirectory . '/../' . $subdirectory;
+
+        // Создаём директорию если не существует
+        if (!is_dir($targetDirectory)) {
+            if (!mkdir($targetDirectory, 0777, true)) {
+                throw new \RuntimeException('Не удалось создать директорию: ' . $targetDirectory);
+            }
+        }
+
+        // Проверяем права на запись
+        if (!is_writable($targetDirectory)) {
+            throw new \RuntimeException('Нет прав на запись в директорию: ' . $targetDirectory);
+        }
+
+        try {
+            $file->move($targetDirectory, $fileName);
+        } catch (FileException $e) {
+            throw new FileException('Ошибка при загрузке файла: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Неожиданная ошибка при загрузке файла: ' . $e->getMessage());
+        }
+
+        // Возвращаем данные, которые получили ДО перемещения
+        return [
+            'filename' => $fileName,
+            'originalFilename' => $originalFilename,
+            'mimeType' => $mimeType,
+            'fileSize' => $fileSize,
+        ];
+    }
+
+    public function deleteAttachment(string $filename, string $subdirectory = 'attachments'): void
+    {
+        $filePath = $this->avatarsDirectory . '/../' . $subdirectory . '/' . $filename;
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
+
 }
