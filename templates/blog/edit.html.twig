@@ -2,12 +2,74 @@
 
 {% block title %}Редактировать блог{% endblock %}
 
-{% block body %}
-<div class="row">
-    <div class="col-md-8 offset-md-2">
-        <h1>Редактировать блог</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .file-upload-area {
+            border: 2px dashed #b0b0b0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
 
+        .file-upload-area.dragover {
+            border-color: #4a4a4a;
+            background-color: #e8e8e8;
+        }
+
+        .file-upload-area:hover {
+            border-color: #4a4a4a;
+            background-color: #f0f0f0;
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: #8c8c8c;
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .file-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item-info {
+            flex-grow: 1;
+        }
+
+        .file-item-remove {
+            color: #dc3545;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .file-item-remove:hover {
+            color: #a71d2a;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
         <div class="card">
+            <div class="card-header">
+                <h3>Редактировать блог</h3>
+            </div>
             <div class="card-body">
                 {% if existingAttachments is not empty %}
                     <div class="mb-4">
@@ -35,17 +97,211 @@
                     </div>
                 {% endif %}
 
-                {{ form_start(form) }}
-                    {{ form_row(form.title) }}
-                    {{ form_row(form.content) }}
-                    
-                    <div class="mt-3">
-                        <button type="submit" class="btn btn-primary">Сохранить</button>
-                        <a href="{{ path('blog_show', {'id': blog.id}) }}" class="btn btn-secondary">Отмена</a>
+                {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                {{ form_row(form.title) }}
+                {{ form_row(form.category) }}
+                {{ form_row(form.status) }}
+                {{ form_row(form.participants) }}
+                {{ form_row(form.content) }}
+
+                <div class="mb-3">
+                    <label class="form-label">Добавить новые файлы (необязательно)</label>
+
+                    <div class="file-upload-area" id="dropZone">
+                        <div class="file-upload-icon">📎</div>
+                        <p class="mb-2"><strong>Перетащите файлы сюда</strong></p>
+                        <p class="text-muted mb-2">или</p>
+                        <button type="button" class="btn btn-secondary btn-sm" id="chooseFilesBtn">
+                            Выбрать файлы
+                        </button>
+                        <div id="fileList" class="file-list"></div>
                     </div>
+
+                    <div style="display: none;">
+                        {{ form_widget(form.attachments) }}
+                    </div>
+
+                    <div class="form-text">
+                        Изображения (JPG, PNG, GIF, WEBP) - макс. 10 МБ<br>
+                        Аудио (MP3, WAV, OGG) - макс. 20 МБ<br>
+                        Документы (PDF, DOC, DOCX, TXT, MD) - макс. 10 МБ<br>
+                        До 5 файлов на блог
+                    </div>
+                    {{ form_errors(form.attachments) }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                <a href="{{ path('blog_show', {'id': blog.id}) }}" class="btn btn-secondary">Отмена</a>
                 {{ form_end(form) }}
             </div>
         </div>
     </div>
-</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        window.addEventListener('load', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.querySelector('input[type="file"][name*="attachments"]');
+            const chooseFilesBtn = document.getElementById('chooseFilesBtn');
+            const fileListDiv = document.getElementById('fileList');
+
+            if (!dropZone || !fileInput || !chooseFilesBtn) {
+                console.error('Не найдены необходимые элементы!');
+                return;
+            }
+
+            let selectedFiles = new DataTransfer();
+
+            // Кнопка "Выбрать файлы"
+            chooseFilesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+
+            // Клик по зоне
+            dropZone.addEventListener('click', function(e) {
+                if (e.target.id !== 'chooseFilesBtn' && !e.target.closest('#chooseFilesBtn') && !e.target.closest('.file-item-remove')) {
+                    fileInput.click();
+                }
+            });
+
+            // Изменение файла через input
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    addFiles(e.target.files);
+                }
+            });
+
+            // Drag & Drop события
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            dropZone.addEventListener('dragenter', function(e) {
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragover', function(e) {
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', function(e) {
+                if (e.target === dropZone) {
+                    dropZone.classList.remove('dragover');
+                }
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    addFiles(files);
+                }
+            });
+
+            function addFiles(files) {
+                // Проверка количества файлов
+                if (selectedFiles.files.length + files.length > 5) {
+                    alert('Можно загрузить максимум 5 файлов');
+                    return;
+                }
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+
+                    // Проверка типа файла
+                    const allowedTypes = [
+                        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+                        'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
+                        'application/pdf', 'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'text/plain', 'text/markdown'
+                    ];
+
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Файл "' + file.name + '" имеет недопустимый тип');
+                        continue;
+                    }
+
+                    // Проверка размера (20MB)
+                    if (file.size > 20 * 1024 * 1024) {
+                        alert('Файл "' + file.name + '" слишком большой. Максимум 20 МБ');
+                        continue;
+                    }
+
+                    selectedFiles.items.add(file);
+                }
+
+                updateFileInput();
+                displayFiles();
+            }
+
+            function updateFileInput() {
+                fileInput.files = selectedFiles.files;
+            }
+
+            function displayFiles() {
+                fileListDiv.innerHTML = '';
+
+                if (selectedFiles.files.length === 0) {
+                    return;
+                }
+
+                for (let i = 0; i < selectedFiles.files.length; i++) {
+                    const file = selectedFiles.files[i];
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+
+                    const fileSizeKB = (file.size / 1024).toFixed(2);
+                    const icon = getFileIcon(file.type);
+
+                    fileItem.innerHTML = `
+                <div class="file-item-info">
+                    <span style="font-size: 20px;">${icon}</span>
+                    <strong>${file.name}</strong>
+                    <span class="text-muted">(${fileSizeKB} KB)</span>
+                </div>
+                <span class="file-item-remove" data-index="${i}">✕</span>
+            `;
+
+                    fileListDiv.appendChild(fileItem);
+                }
+
+                // Обработчики удаления
+                document.querySelectorAll('.file-item-remove').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const index = parseInt(this.getAttribute('data-index'));
+                        removeFile(index);
+                    });
+                });
+            }
+
+            function removeFile(index) {
+                const newFileList = new DataTransfer();
+
+                for (let i = 0; i < selectedFiles.files.length; i++) {
+                    if (i !== index) {
+                        newFileList.items.add(selectedFiles.files[i]);
+                    }
+                }
+
+                selectedFiles = newFileList;
+                updateFileInput();
+                displayFiles();
+            }
+
+            function getFileIcon(mimeType) {
+                if (mimeType.startsWith('image/')) return '🖼️';
+                if (mimeType.startsWith('audio/')) return '🎵';
+                if (mimeType.includes('pdf') || mimeType.includes('word') || mimeType.includes('text')) return '📄';
+                return '📎';
+            }
+        });
+    </script>
 {% endblock %}
