@@ -216,3 +216,18 @@ h1, h2, h3, h4, h5, h6 {
 hr {
     border-top: 1px solid #d0d0d0;
 }
+
+/* Улучшенный вид для multiple select */
+select[multiple] {
+    min-height: 120px !important;
+}
+
+select[multiple] option {
+    padding: 8px;
+    margin: 2px 0;
+}
+
+select[multiple] option:checked {
+    background-color: #4a4a4a !important;
+    color: #ffffff !important;
+}

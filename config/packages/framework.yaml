@@ -1,7 +1,7 @@
 framework:
     secret: '%env(APP_SECRET)%'
     csrf_protection: true
-    http_method_override: false
+    http_method_override: true
     handle_all_throwables: true
 
     php_errors:
@@ -11,8 +11,11 @@ framework:
       handler_id: null
       cookie_secure: auto
       cookie_samesite: lax
+      cookie_httponly: true
+      cookie_lifetime: 0
+      gc_maxlifetime: 3600
       storage_factory_id: session.storage.factory.native
-      save_path: '%kernel.project_dir%/var/sessions'
+      save_path: 'C:\Windows\Temp'
 
 when@test:
     framework:

@@ -11,6 +11,13 @@
                 <p class="text-muted">
                     Автор: <strong>{{ blog.author.username }}</strong><br>
                     <br>Тема: <strong>{{ blog.category ? blog.category.name : 'Без темы' }}</strong>
+                    <br>Статус: <strong>{{ blog.status == 'public' ? '🌐 Общий' : '🔒 Закрытый' }}</strong>
+                    {% if blog.participants|length > 0 %}
+                        <br>Участники:
+                        {% for participant in blog.participants %}
+                            <span class="badge bg-secondary">{{ participant.username }}</span>
+                        {% endfor %}
+                    {% endif %}
                     Создано: {{ blog.createdAt|date('d.m.Y H:i') }}
                     {% if blog.updatedAt > blog.createdAt %}
                         <br>Обновлено: {{ blog.updatedAt|date('d.m.Y H:i') }}
@@ -23,13 +30,13 @@
             </div>
             <div class="card-footer">
                 <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>
-                
+
                 {% if app.user and app.user == blog.author %}
                     <a href="{{ path('blog_edit', {'id': blog.id}) }}" class="btn btn-warning">Редактировать</a>
-                    
-                    <form method="post" action="{{ path('blog_delete', {'id': blog.id}) }}" style="display: inline-block;" onsubmit="return confirm('Вы уверены, что хотите удалить этот блог?');">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ blog.id) }}">
-                        <button class="btn btn-danger">Удалить</button>
+
+                    <form method="post" action="{{ path('blog_delete', {'id': blog.id}) }}" style="display: inline-block;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить этот блог?');">Удалить</button>
                     </form>
                 {% endif %}
             </div>

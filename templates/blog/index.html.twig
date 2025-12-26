@@ -22,8 +22,14 @@
                     <div class="col-md-6 mb-4">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h5 class="card-title">{{ blog.title }}</h5>
+                                <h5 class="card-title">
+                                    {% if blog.status == 'private' %}🔒 {% endif %}
+                                    {{ blog.title }}
+                                </h5>
                                 <span class="badge bg-primary">{{ blog.category ? blog.category.name : 'Без темы' }}</span>
+                                {% if blog.status == 'private' %}
+                                    <span class="badge bg-secondary">Закрытый</span>
+                                {% endif %}
                                 <p class="card-text">{{ blog.content|length > 150 ? blog.content|slice(0, 150) ~ '...' : blog.content }}</p>
                                 <p class="text-muted small">
                                     Автор: {{ blog.author.username }}<br>
