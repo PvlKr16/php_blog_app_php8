@@ -1,0 +1,250 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Редактировать профиль{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .current-avatar-preview {
+            max-width: 200px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .avatar-upload-area {
+            border: 2px dashed #b0b0b0;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        .avatar-upload-area.dragover {
+            border-color: #4a4a4a;
+            background-color: #e8e8e8;
+        }
+
+        .avatar-upload-area:hover {
+            border-color: #4a4a4a;
+            background-color: #f0f0f0;
+        }
+
+        .avatar-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 15px auto;
+            display: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .avatar-upload-icon {
+            font-size: 48px;
+            color: #8c8c8c;
+            margin-bottom: 10px;
+        }
+
+        .file-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6c6c6c;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Редактировать профиль</h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profile-form'}}) }}
+
+                    {{ form_row(form.username) }}
+                    {{ form_row(form.email) }}
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <label class="form-label">Текущий аватар</label>
+                        <div>
+                            {% if user.avatar %}
+                                <img src="/uploads/avatars/{{ user.avatar }}" alt="Avatar" class="current-avatar-preview" id="currentAvatar">
+                                <form method="post" action="{{ path('profile_avatar_delete') }}" style="display: inline-block;">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить аватар?');">
+                                        Удалить аватар
+                                    </button>
+                                </form>
+                            {% else %}
+                                <p class="text-muted">Аватар не установлен</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Загрузить новый аватар</label>
+
+                        <div class="avatar-upload-area" id="dropZone">
+                            <div class="avatar-upload-icon">📷</div>
+                            <p class="mb-2"><strong>Перетащите изображение сюда</strong></p>
+                            <p class="text-muted mb-2">или</p>
+                            <button type="button" class="btn btn-secondary btn-sm" id="chooseFileBtn">
+                                Выбрать файл
+                            </button>
+                            <img id="avatarPreview" class="avatar-preview" alt="Предпросмотр">
+                            <div id="fileInfo" class="file-info"></div>
+                        </div>
+
+                        <div style="display: none;">
+                            {{ form_widget(form.avatarFile) }}
+                        </div>
+
+                        <div class="form-text">JPG, PNG, GIF, WEBP. Макс. 5 МБ</div>
+                        {{ form_errors(form.avatarFile) }}
+                    </div>
+
+                    <hr>
+
+                    {{ form_row(form.birthDate) }}
+                    {{ form_row(form.address) }}
+                    {{ form_row(form.about) }}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                        <a href="{{ path('profile_view') }}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        window.addEventListener('load', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.querySelector('input[type="file"][name*="avatarFile"]');
+            const chooseFileBtn = document.getElementById('chooseFileBtn');
+            const preview = document.getElementById('avatarPreview');
+            const fileInfo = document.getElementById('fileInfo');
+            const currentAvatar = document.getElementById('currentAvatar');
+
+            if (!dropZone || !fileInput || !chooseFileBtn) {
+                console.error('Не найдены необходимые элементы!');
+                return;
+            }
+
+            // Скрываем оригинальный input
+            fileInput.style.display = 'none';
+
+            // Кнопка "Выбрать файл"
+            chooseFileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+
+            // Клик по зоне
+            dropZone.addEventListener('click', function(e) {
+                if (e.target.id !== 'chooseFileBtn' && !e.target.closest('#chooseFileBtn')) {
+                    fileInput.click();
+                }
+            });
+
+            // Изменение файла через input
+            fileInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files.length > 0) {
+                    handleFiles(e.target.files);
+                }
+            });
+
+            // Drag & Drop события
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+
+                document.body.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            dropZone.addEventListener('dragenter', function(e) {
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragover', function(e) {
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', function(e) {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                dropZone.classList.remove('dragover');
+
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(files[0]);
+                    fileInput.files = dataTransfer.files;
+
+                    handleFiles(files);
+                }
+            });
+
+            function handleFiles(files) {
+                if (files.length === 0) {
+                    return;
+                }
+
+                const file = files[0];
+
+                // Проверка типа файла
+                if (!file.type.match('image.*')) {
+                    alert('Пожалуйста, выберите изображение');
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Проверка размера (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Файл слишком большой. Максимум 5 МБ');
+                    fileInput.value = '';
+                    return;
+                }
+
+                // Показываем информацию о файле
+                const fileSizeKB = (file.size / 1024).toFixed(2);
+                fileInfo.innerHTML = '<strong>' + file.name + '</strong><br>' + fileSizeKB + ' КБ';
+
+                // Скрываем текущий аватар, если есть
+                if (currentAvatar) {
+                    currentAvatar.style.display = 'none';
+                }
+
+                // Показываем превью нового
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.onerror = function(e) {
+                    console.error('Ошибка при чтении файла:', e);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+{% endblock %}

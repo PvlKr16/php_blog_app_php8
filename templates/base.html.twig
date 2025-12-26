@@ -9,57 +9,53 @@
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{{ path('home') }}">Блог-платформа</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{{ path('home') }}">Блог-платформа</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('blog_list') }}">Все блоги</a>
+                </li>
+                {% if app.user and app.user.isAdmin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('blog_list') }}">Все блоги</a>
+                        <a class="nav-link" href="{{ path('category_list') }}">Темы</a>
                     </li>
-                    {% if app.user and app.user.isAdmin %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('category_list') }}">Темы</a>
-                        </li>
-                    {% endif %}
+                {% endif %}
 
-                    {# temporary #}
-{#                    <div class="container mt-2">#}
-{#                        <div class="alert alert-info">#}
-{#                            Авторизован: {{ app.user ? 'ДА - ' ~ app.user.email : 'НЕТ' }}#}
-{#                        </div>#}
-{#                    </div>#}
-
-                    {% if app.user %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('blog_new') }}">Создать блог</a>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link">
-                                {% if app.user.avatar %}
-                                    <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px; vertical-align: middle;">
-                                {% endif %}
-                                Привет, {{ app.user.username }}!
-                            </span>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('logout') }}">Выход</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('login') }}">Вход</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ path('register') }}">Регистрация</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+                {% if app.user %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('blog_new') }}">Создать блог</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if app.user.avatar %}
+                                <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px; vertical-align: middle;">
+                            {% endif %}
+                            {{ app.user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ path('profile_view') }}">Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="{{ path('profile_edit') }}">Редактировать профиль</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ path('logout') }}">Выйти</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('login') }}">Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ path('register') }}">Регистрация</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="container mt-4">
         {% for label, messages in app.flashes %}

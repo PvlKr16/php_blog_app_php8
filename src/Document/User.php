@@ -25,6 +25,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[MongoDB\Field(type: 'string')]
     private ?string $avatar = null;
 
+    #[MongoDB\Field(type: 'date')]
+    private ?\DateTime $birthDate = null;
+
+    #[MongoDB\Field(type: 'string')]
+    private ?string $address = null;
+
+    #[MongoDB\Field(type: 'string')]
+    private ?string $about = null;
+
     #[MongoDB\Field(type: 'collection')]
     private array $roles = [];
 
@@ -135,6 +144,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAvatar(?string $avatar): static
     {
         $this->avatar = $avatar;
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTime
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(?\DateTime $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(?string $address): static
+    {
+        $this->address = $address;
+        return $this;
+    }
+
+    public function getAbout(): ?string
+    {
+        return $this->about;
+    }
+
+    public function setAbout(?string $about): static
+    {
+        $this->about = $about;
         return $this;
     }
 
