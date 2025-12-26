@@ -183,9 +183,6 @@ function initAvatarUpload() {
         return; // Элементы не найдены на странице
     }
 
-    // Скрываем оригинальный input
-    fileInput.style.display = 'none';
-
     // Кнопка "Выбрать файл"
     chooseFileBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -193,12 +190,8 @@ function initAvatarUpload() {
         fileInput.click();
     });
 
-    // Клик по зоне
-    dropZone.addEventListener('click', function(e) {
-        if (e.target.id !== 'chooseFileBtn' && !e.target.closest('#chooseFileBtn')) {
-            fileInput.click();
-        }
-    });
+    // УДАЛЯЕМ обработчик клика на dropZone - он блокирует форму!
+    // Вместо этого только drag & drop
 
     // Изменение файла через input
     fileInput.addEventListener('change', function(e) {
@@ -207,14 +200,9 @@ function initAvatarUpload() {
         }
     });
 
-    // Drag & Drop события
+    // Drag & Drop события - ТОЛЬКО на dropZone
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }, false);
-
-        document.body.addEventListener(eventName, function(e) {
             e.preventDefault();
             e.stopPropagation();
         }, false);
@@ -229,7 +217,9 @@ function initAvatarUpload() {
     });
 
     dropZone.addEventListener('dragleave', function(e) {
-        dropZone.classList.remove('dragover');
+        if (e.target === dropZone) {
+            dropZone.classList.remove('dragover');
+        }
     });
 
     dropZone.addEventListener('drop', function(e) {
