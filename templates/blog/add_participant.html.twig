@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Добавить участника{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Добавить участника в блог</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Блог:</strong> {{ blog.title }}
+                </div>
+                <div class="mb-3">
+                    <strong>Статус:</strong> {{ blog.status == 'public' ? '🌐 Общий' : '🔒 Закрытый' }}
+                </div>
+                <hr>
+
+                {{ form_start(form) }}
+                {{ form_row(form.user) }}
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">Добавить участника</button>
+                    <a href="{{ path('blog_show', {'id': blog.id}) }}" class="btn btn-secondary">Отмена</a>
+                </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

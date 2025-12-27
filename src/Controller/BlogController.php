@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Document\Blog;
 use App\Document\Category;
+use App\Document\User;
 use App\Form\BlogType;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Document\Attachment;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use App\Form\AddParticipantType;
 
 #[Route('/blog')]
 class BlogController extends AbstractController
@@ -250,6 +252,81 @@ class BlogController extends AbstractController
         $this->addFlash('success', 'Файл удалён!');
 
         return $this->redirectToRoute('blog_show', ['id' => $blog->getId()]);
+    }
+
+    #[Route('/{id}/participants/add', name: 'blog_add_participant', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function addParticipant(Request $request, Blog $blog, DocumentManager $dm): Response
+    {
+        // Проверка доступа к просмотру блога
+        if (!$blog->canView($this->getUser())) {
+            throw $this->createAccessDeniedException('У вас нет доступа к этому блогу.');
+        }
+
+        $form = $this->createForm(AddParticipantType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $user = $form->get('user')->getData();
+
+            // Проверяем, не является ли пользователь уже участником
+            if ($blog->isParticipant($user)) {
+                $this->addFlash('warning', $user->getUsername() . ' уже является участником этого блога.');
+            } else {
+                $blog->addParticipant($user);
+                $dm->flush();
+
+                $this->addFlash('success', $user->getUsername() . ' добавлен в участники блога!');
+            }
+
+            return $this->redirectToRoute('blog_show', ['id' => $blog->getId()]);
+        }
+
+        return $this->render('blog/add_participant.html.twig', [
+            'blog' => $blog,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/{blogId}/participants/{userId}/remove', name: 'blog_remove_participant', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function removeParticipant(string $blogId, string $userId, DocumentManager $dm): Response
+    {
+        $blog = $dm->getRepository(Blog::class)->find($blogId);
+        $user = $dm->getRepository(User::class)->find($userId);
+
+        if (!$blog || !$user) {
+            throw $this->createNotFoundException('Блог или пользователь не найдены.');
+        }
+
+        // Проверка доступа к просмотру блога
+        if (!$blog->canView($this->getUser())) {
+            throw $this->createAccessDeniedException('У вас нет доступа к этому блогу.');
+        }
+
+        // Можно удалить только самого себя
+        if ($this->getUser() !== $user) {
+            $this->addFlash('error', 'Вы можете удалить из участников только себя.');
+            return $this->redirectToRoute('blog_show', ['id' => $blogId]);
+        }
+
+        // Нельзя удалить автора
+        if ($blog->getAuthor() === $user) {
+            $this->addFlash('error', 'Автор не может удалить себя из участников.');
+            return $this->redirectToRoute('blog_show', ['id' => $blogId]);
+        }
+
+        $blog->removeParticipant($user);
+        $dm->flush();
+
+        $this->addFlash('success', 'Вы удалены из участников блога.');
+
+        // После удаления себя из закрытого блога - редирект на список
+        if ($blog->getStatus() === 'private') {
+            return $this->redirectToRoute('blog_list');
+        }
+
+        return $this->redirectToRoute('blog_show', ['id' => $blogId]);
     }
 
 }
