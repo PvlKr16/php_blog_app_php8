@@ -1,0 +1,45 @@
+<div id="reply-form-{{ comment.id }}" class="ms-5 mt-2" style="display: none;">
+    <div class="card">
+        <div class="card-body">
+            <form method="post" action="{{ path('comment_reply', {'commentId': comment.id}) }}" enctype="multipart/form-data">
+                <input type="hidden" name="comment[_token]" value="{{ csrf_token('comment') }}" />
+
+                <div class="mb-3">
+                    <label class="form-label">Ваш ответ</label>
+                    <textarea name="comment[content]"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Напишите ответ..."
+                              required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Прикрепить файлы (необязательно)</label>
+
+                    <div class="file-upload-area">
+                        <div class="file-upload-icon">📎</div>
+                        <p class="mb-2"><strong>Перетащите файлы сюда</strong></p>
+                        <p class="text-muted mb-2">или</p>
+                        <button type="button" class="btn btn-secondary btn-sm chooseFilesBtn">
+                            Выбрать файлы
+                        </button>
+                        <div class="file-list fileList"></div>
+                    </div>
+
+                    <input type="file"
+                           name="comment[attachments][]"
+                           multiple
+                           accept="image/*,audio/*,.pdf,.doc,.docx,.txt,.md"
+                           style="display: none;">
+
+                    <div class="form-text">
+                        Изображения, аудио, документы. До 5 файлов, макс. 20 МБ каждый.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-sm btn-primary">Отправить ответ</button>
+                <button type="button" class="btn btn-sm btn-secondary" onclick="toggleReplyForm('{{ comment.id }}')">Отмена</button>
+            </form>
+        </div>
+    </div>
+</div>

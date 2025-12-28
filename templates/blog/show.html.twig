@@ -94,6 +94,37 @@
                     </div>
                 {% endif %}
             </div>
+            {# СЕКЦИЯ КОММЕНТАРИЕВ #}
+            <hr>
+            <div class="comments-section">
+                <h4>💬 Комментарии ({{ comments|length }})</h4>
+
+                {# Форма добавления комментария #}
+                {% if app.user %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            {{ form_start(commentForm, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                            {{ include('blog/_comment_form_content.html.twig', {'form': commentForm}) }}
+                            <button type="submit" class="btn btn-primary">Добавить комментарий</button>
+                            {{ form_end(commentForm) }}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# Список комментариев #}
+                {% if comments|length > 0 %}
+                    {% for comment in comments %}
+                        {{ include('blog/_comment.html.twig', {
+                            'comment': comment,
+                            'blog': blog,
+                            'commentAttachments': commentAttachments,
+                            'commentReplies': commentReplies
+                        }) }}
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">Комментариев пока нет. Будьте первым!</p>
+                {% endif %}
+            </div>
             <div class="card-footer">
                 <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>
 

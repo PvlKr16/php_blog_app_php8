@@ -1,0 +1,72 @@
+<div class="comment mb-3 {% if comment.isReply %}ms-5{% endif %}" id="comment-{{ comment.id }}">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    {% if comment.author.avatar %}
+                        <img src="/uploads/avatars/{{ comment.author.avatar }}"
+                             style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle;">
+                    {% endif %}
+                    <strong>{{ comment.author.username }}</strong>
+                    <small class="text-muted">{{ comment.createdAt|date('d.m.Y H:i') }}</small>
+                </div>
+                <div>
+                    {% if app.user and (comment.author == app.user or blog.author == app.user) %}
+                        <form method="post" action="{{ path('comment_delete', {'id': comment.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0"
+                                    onclick="return confirm('Удалить комментарий?');"
+                                    title="Удалить">
+                                🗑️
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            <p class="mb-2">{{ comment.content|nl2br }}</p>
+
+            {# Вложения комментария #}
+            {% if commentAttachments[comment.id] is defined and commentAttachments[comment.id]|length > 0 %}
+                <div class="mt-2">
+                    {% for attachment in commentAttachments[comment.id] %}
+                        <span class="badge bg-light text-dark me-1">
+                            {{ attachment.icon }}
+                            <a href="/uploads/attachments/{{ attachment.filename }}" target="_blank" class="text-dark">
+                                {{ attachment.originalFilename }}
+                            </a>
+                            <small class="text-muted">({{ attachment.fileSizeFormatted }})</small>
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {# Кнопка "Ответить" #}
+            {% if app.user %}
+                <button type="button" class="btn btn-sm btn-link p-0 mt-2"
+                        onclick="toggleReplyForm('{{ comment.id }}')">
+                    💬 Ответить
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Форма ответа (скрыта по умолчанию) - используем простую HTML форму вместо Symfony Form #}
+    {% if app.user %}
+        {{ include('blog/_reply_form.html.twig', {'comment': comment}) }}
+    {% endif %}
+
+    {# Ответы на комментарий #}
+    {% if commentReplies[comment.id] is defined and commentReplies[comment.id]|length > 0 %}
+        <div class="replies ms-5 mt-2">
+            {% for reply in commentReplies[comment.id] %}
+                {{ include('blog/_comment.html.twig', {
+                    'comment': reply,
+                    'blog': blog,
+                    'commentAttachments': commentAttachments,
+                    'commentReplies': commentReplies
+                }) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

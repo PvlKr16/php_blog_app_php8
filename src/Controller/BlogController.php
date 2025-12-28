@@ -17,6 +17,8 @@ use App\Document\Attachment;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\AddParticipantType;
+use App\Document\Comment;
+use App\Form\CommentType;
 
 #[Route('/blog')]
 class BlogController extends AbstractController
@@ -126,15 +128,50 @@ class BlogController extends AbstractController
             throw $this->createAccessDeniedException('У вас нет доступа к этому блогу.');
         }
 
-        // Загружаем вложения
+        // Загружаем вложения блога
         $attachments = $dm->getRepository(Attachment::class)->findBy(
-            ['blog' => $blog],
+            ['blog' => $blog, 'comment' => null],
             ['uploadedAt' => 'ASC']
         );
+
+        // Загружаем комментарии (только основные, без ответов)
+        $comments = $dm->getRepository(Comment::class)->findBy(
+            ['blog' => $blog, 'parentComment' => null],
+            ['createdAt' => 'DESC']
+        );
+
+        // Загружаем все вложения комментариев
+        $allComments = $dm->getRepository(Comment::class)->findBy(['blog' => $blog]);
+        $commentAttachments = [];
+        foreach ($allComments as $comment) {
+            $commentAttachments[$comment->getId()] = $dm->getRepository(Attachment::class)->findBy(['comment' => $comment]);
+        }
+
+        // Загружаем все ответы на комментарии
+        $commentReplies = [];
+        foreach ($comments as $comment) {
+            $replies = $dm->getRepository(Comment::class)->findBy(
+                ['parentComment' => $comment],
+                ['createdAt' => 'ASC']
+            );
+            $commentReplies[$comment->getId()] = $replies;
+
+            // Загружаем вложения для ответов
+            foreach ($replies as $reply) {
+                $commentAttachments[$reply->getId()] = $dm->getRepository(Attachment::class)->findBy(['comment' => $reply]);
+            }
+        }
+
+        // Создаём форму для нового комментария
+        $commentForm = $this->createForm(CommentType::class, null, ['action' => $this->generateUrl('comment_add', ['blogId' => $blog->getId()])]);
 
         return $this->render('blog/show.html.twig', [
             'blog' => $blog,
             'attachments' => $attachments,
+            'comments' => $comments,
+            'commentForm' => $commentForm->createView(),
+            'commentAttachments' => $commentAttachments,
+            'commentReplies' => $commentReplies,
         ]);
     }
 
