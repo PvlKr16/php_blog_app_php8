@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Document\Blog;
 use App\Document\Category;
+use App\Document\Post;
 use App\Document\User;
 use App\Form\BlogType;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -126,15 +127,30 @@ class BlogController extends AbstractController
             throw $this->createAccessDeniedException('У вас нет доступа к этому блогу.');
         }
 
-        // Загружаем вложения
+        // Загружаем вложения блога - ИСПРАВЛЕНО
         $attachments = $dm->getRepository(Attachment::class)->findBy(
             ['blog' => $blog],
             ['uploadedAt' => 'ASC']
         );
 
+        // Фильтруем только те, что без поста
+        $blogAttachments = [];
+        foreach ($attachments as $attachment) {
+            if ($attachment->getPost() === null) {
+                $blogAttachments[] = $attachment;
+            }
+        }
+
+        // Загружаем записи блога
+        $posts = $dm->getRepository(Post::class)->findBy(
+            ['blog' => $blog],
+            ['createdAt' => 'DESC']
+        );
+
         return $this->render('blog/show.html.twig', [
             'blog' => $blog,
-            'attachments' => $attachments,
+            'attachments' => $blogAttachments,
+            'posts' => $posts,
         ]);
     }
 

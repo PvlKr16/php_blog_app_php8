@@ -93,6 +93,40 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+
+                {# СЕКЦИЯ ЗАПИСЕЙ #}
+                <hr>
+                <div class="posts-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>📝 Записи в блоге ({{ posts|length }})</h4>
+                        {% if app.user %}
+                            <a href="{{ path('post_new', {'blogId': blog.id}) }}" class="btn btn-sm btn-primary">
+                                ➕ Добавить запись
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    {% if posts|length > 0 %}
+                        <div class="list-group">
+                            {% for post in posts %}
+                                <a href="{{ path('post_show', {'id': post.id}) }}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 class="mb-1">{{ post.title }}</h5>
+                                            <p class="mb-1 text-muted">{{ post.content|length > 150 ? post.content|slice(0, 150) ~ '...' : post.content }}</p>
+                                            <small>
+                                                Автор: {{ post.author.username }} |
+                                                {{ post.createdAt|date('d.m.Y H:i') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">В блоге пока нет записей. Добавьте первую!</p>
+                    {% endif %}
+                </div>
             </div>
             <div class="card-footer">
                 <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>

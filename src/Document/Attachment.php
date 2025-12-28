@@ -25,6 +25,9 @@ class Attachment
     #[MongoDB\ReferenceOne(targetDocument: Blog::class, storeAs: 'id')]
     private ?Blog $blog = null;
 
+    #[MongoDB\ReferenceOne(targetDocument: Post::class, storeAs: 'id')]
+    private ?Post $post = null;
+
     #[MongoDB\Field(type: 'date')]
     private \DateTime $uploadedAt;
 
@@ -90,6 +93,17 @@ class Attachment
     public function setBlog(?Blog $blog): static
     {
         $this->blog = $blog;
+        return $this;
+    }
+
+    public function getPost(): ?Post
+    {
+        return $this->post;
+    }
+
+    public function setPost(?Post $post): static
+    {
+        $this->post = $post;
         return $this;
     }
 
