@@ -23,7 +23,7 @@ security:
           default_target_path: home
           enable_csrf: true
         logout:
-          path: logout
+          path: app_logout
           target: home
         entry_point: form_login
         remember_me: # ДОБАВЬТЕ ЭТИ СТРОКИ

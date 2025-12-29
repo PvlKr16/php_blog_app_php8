@@ -359,3 +359,42 @@ table {
     font-size: 14px;
     color: #6c6c6c;
 }
+
+/* ============================================
+   SELECT2 СТИЛИ
+   ============================================ */
+
+/* Стили для Select2 в теме Bootstrap 5 */
+.select2-container--bootstrap-5 .select2-selection {
+    border-color: #b0b0b0 !important;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: #6c6c6c !important;
+    border-color: #6c6c6c !important;
+    color: #ffffff !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    color: #ffffff !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ff0000 !important;
+}
+
+.select2-container--bootstrap-5.select2-container--focus .select2-selection {
+    border-color: #4a4a4a !important;
+    box-shadow: 0 0 0 0.2rem rgba(74, 74, 74, 0.25) !important;
+}
+
+.select2-dropdown {
+    border-color: #b0b0b0 !important;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: #4a4a4a !important;
+    color: #ffffff !important;
+}

@@ -37,36 +37,21 @@
 
                 {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
                 {{ form_row(form.title) }}
-                {{ form_row(form.category) }}
-                {{ form_row(form.status) }}
-                {{ form_row(form.participants) }}
                 {{ form_row(form.content) }}
 
-                <div class="mb-3">
-                    <label class="form-label">Добавить новые файлы (необязательно)</label>
-
-                    <div class="file-upload-area" id="dropZone">
-                        <div class="file-upload-icon">📎</div>
-                        <p class="mb-2"><strong>Перетащите файлы сюда</strong></p>
-                        <p class="text-muted mb-2">или</p>
-                        <button type="button" class="btn btn-secondary btn-sm" id="chooseFilesBtn">
-                            Выбрать файлы
-                        </button>
-                        <div id="fileList" class="file-list"></div>
+                <div class="row">
+                    <div class="col-md-4">
+                        {{ form_row(form.category) }}
                     </div>
-
-                    <div style="display: none;">
-                        {{ form_widget(form.attachments) }}
+                    <div class="col-md-4">
+                        {{ form_row(form.status) }}
                     </div>
-
-                    <div class="form-text">
-                        Изображения (JPG, PNG, GIF, WEBP) - макс. 10 МБ<br>
-                        Аудио (MP3, WAV, OGG) - макс. 20 МБ<br>
-                        Документы (PDF, DOC, DOCX, TXT, MD) - макс. 10 МБ<br>
-                        До 5 файлов на блог
+                    <div class="col-md-4">
+                        {{ form_row(form.participants) }}
                     </div>
-                    {{ form_errors(form.attachments) }}
                 </div>
+
+                {{ include('_partials/file_upload_zone.html.twig', {'form': form}) }}
 
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                 <a href="{{ path('blog_show', {'id': blog.id}) }}" class="btn btn-secondary">Отмена</a>

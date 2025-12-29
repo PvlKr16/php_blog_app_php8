@@ -35,13 +35,13 @@ class SecurityController extends AbstractController
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
-                    $form->get('password')->getData()
+                    $form->get('plainPassword')->getData()
                 )
             );
 
             // Обработка аватара
             /** @var UploadedFile $avatarFile */
-            $avatarFile = $form->get('avatar')->getData();
+            $avatarFile = $form->get('avatarFile')->getData();
 
             if ($avatarFile) {
                 try {
@@ -81,7 +81,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/logout', name: 'logout')]
+    #[Route('/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');

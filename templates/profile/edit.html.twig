@@ -31,27 +31,7 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Загрузить новый аватар</label>
-
-                        <div class="avatar-upload-area" id="dropZone">
-                            <div class="avatar-upload-icon">📷</div>
-                            <p class="mb-2"><strong>Перетащите изображение сюда</strong></p>
-                            <p class="text-muted mb-2">или</p>
-                            <button type="button" class="btn btn-secondary btn-sm" id="chooseFileBtn">
-                                Выбрать файл
-                            </button>
-                            <img id="avatarPreview" class="avatar-preview" alt="Предпросмотр">
-                            <div id="fileInfo" class="file-info"></div>
-                        </div>
-
-                        <div style="display: none;">
-                            {{ form_widget(form.avatarFile) }}
-                        </div>
-
-                        <div class="form-text">JPG, PNG, GIF, WEBP. Макс. 5 МБ</div>
-                        {{ form_errors(form.avatarFile) }}
-                    </div>
+                    {{ include('_partials/avatar_upload_zone.html.twig', {'form': form}) }}
 
                     <hr>
 

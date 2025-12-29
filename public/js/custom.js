@@ -307,4 +307,17 @@ window.addEventListener('load', function() {
 
     // Инициализируем загрузку аватара (если есть на странице)
     initAvatarUpload();
+
+    // Инициализируем Select2 для множественного выбора участников
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        jQuery('.participants-select').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: function() {
+                return jQuery(this).data('placeholder');
+            },
+            allowClear: true,
+            closeOnSelect: false
+        });
+    }
 });

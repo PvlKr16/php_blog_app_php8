@@ -4,11 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Блог-платформа{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
+<!-- Навигация -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
         <a class="navbar-brand" href="{{ path('home') }}">Блог-платформа</a>
@@ -18,22 +21,21 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ path('blog_list') }}">Все блоги</a>
+                    <a class="nav-link" href="{{ path('blog_list') }}">Блоги</a>
                 </li>
-                {% if app.user and app.user.isAdmin %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('category_list') }}">Темы</a>
-                    </li>
-                {% endif %}
-
                 {% if app.user %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('blog_new') }}">Создать блог</a>
                     </li>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('category_list') }}">Управление темами</a>
+                        </li>
+                    {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if app.user.avatar %}
-                                <img src="/uploads/avatars/{{ app.user.avatar }}" alt="Avatar" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; margin-right: 8px; vertical-align: middle;">
+                                <img src="/uploads/avatars/{{ app.user.avatar }}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:4px;vertical-align:middle;">
                             {% endif %}
                             {{ app.user.username }}
                         </a>
@@ -41,12 +43,12 @@
                             <li><a class="dropdown-item" href="{{ path('profile_view') }}">Мой профиль</a></li>
                             <li><a class="dropdown-item" href="{{ path('profile_edit') }}">Редактировать профиль</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ path('logout') }}">Выйти</a></li>
+                            <li><a class="dropdown-item" href="{{ path('app_logout') }}">Выйти</a></li>
                         </ul>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ path('login') }}">Вход</a>
+                        <a class="nav-link" href="{{ path('login') }}">Войти</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('register') }}">Регистрация</a>
@@ -57,21 +59,26 @@
     </div>
 </nav>
 
-    <div class="container mt-4">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
+<!-- Flash сообщения -->
+<div class="container mt-3">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
         {% endfor %}
+    {% endfor %}
+</div>
 
-        {% block body %}{% endblock %}
-    </div>
+<!-- Основной контент -->
+{% block body %}{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/custom.js') }}"></script>
-    {% block javascripts %}{% endblock %}
+<!-- Скрипты -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ asset('js/custom.js') }}"></script>
+{% block javascripts %}{% endblock %}
 </body>
 </html>

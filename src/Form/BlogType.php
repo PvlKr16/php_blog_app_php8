@@ -5,19 +5,19 @@ namespace App\Form;
 use App\Document\Blog;
 use App\Document\Category;
 use App\Document\User;
+use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
-use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\Count;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class BlogType extends AbstractType
 {
@@ -25,68 +25,58 @@ class BlogType extends AbstractType
     {
         $builder
             ->add('title', TextType::class, [
+                'label' => 'Заголовок',
                 'constraints' => [
                     new NotBlank(['message' => 'Пожалуйста, введите заголовок']),
                     new Length([
-                        'min' => 5,
+                        'min' => 3,
                         'minMessage' => 'Заголовок должен быть не менее {{ limit }} символов',
                         'max' => 255,
+                        'maxMessage' => 'Заголовок должен быть не более {{ limit }} символов',
                     ]),
                 ],
-                'label' => 'Заголовок',
                 'attr' => ['class' => 'form-control'],
             ])
-            ->add('category', ChoiceType::class, [
-                'choices' => $options['categories'],
-                'choice_label' => function(?Category $category) {
-                    return $category ? $category->getName() : '';
-                },
-                'choice_value' => function(?Category $category) {
-                    return $category ? $category->getId() : '';
-                },
+            ->add('content', TextareaType::class, [
+                'label' => 'Содержание',
+                'constraints' => [
+                    new NotBlank(['message' => 'Пожалуйста, введите содержание']),
+                    new Length([
+                        'min' => 10,
+                        'minMessage' => 'Содержание должно быть не менее {{ limit }} символов',
+                    ]),
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 10,
+                ],
+            ])
+            ->add('category', DocumentType::class, [
+                'class' => Category::class,
+                'choice_label' => 'name',
                 'label' => 'Тема',
                 'placeholder' => 'Выберите тему',
-                'constraints' => [
-                    new NotBlank(['message' => 'Пожалуйста, выберите тему']),
-                ],
+                'required' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('status', ChoiceType::class, [
-                'choices' => [
-                    'Общий (виден всем авторизованным)' => 'public',
-                    'Закрытый (только для участников)' => 'private',
-                ],
                 'label' => 'Статус блога',
-                'data' => 'public',
+                'choices' => [
+                    '🌐 Общий' => 'public',
+                    '🔒 Закрытый' => 'private',
+                ],
+                'expanded' => false,
                 'attr' => ['class' => 'form-control'],
             ])
             ->add('participants', DocumentType::class, [
                 'class' => User::class,
-                'choice_label' => function(?User $user) {
-                    return $user ? $user->getUsername() . ' (' . $user->getEmail() . ')' : '';
-                },
-                'label' => 'Участники (необязательно)',
+                'choice_label' => 'username',
+                'label' => 'Участники',
                 'multiple' => true,
-                'expanded' => false,
                 'required' => false,
                 'attr' => [
-                    'class' => 'form-control',
-                    'size' => 5,
-                ],
-                'help' => 'Удерживайте Ctrl (Cmd на Mac) для выбора нескольких пользователей. Вы автоматически добавляетесь как участник.',
-            ])
-            ->add('content', TextareaType::class, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Пожалуйста, введите содержимое']),
-                    new Length([
-                        'min' => 20,
-                        'minMessage' => 'Содержимое должно быть не менее {{ limit }} символов',
-                    ]),
-                ],
-                'label' => 'Содержимое',
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 10,
+                    'class' => 'form-select participants-select',
+                    'data-placeholder' => 'Выберите участников (необязательно)',
                 ],
             ])
             ->add('attachments', FileType::class, [
@@ -104,23 +94,11 @@ class BlogType extends AbstractType
                             'maxSize' => '20M',
                             'maxSizeMessage' => 'Файл слишком большой ({{ size }} {{ suffix }}). Максимум {{ limit }} {{ suffix }}.',
                             'mimeTypes' => [
-                                // Изображения
-                                'image/jpeg',
-                                'image/jpg',
-                                'image/png',
-                                'image/gif',
-                                'image/webp',
-                                // Аудио
-                                'audio/mpeg',
-                                'audio/mp3',
-                                'audio/wav',
-                                'audio/ogg',
-                                // Документы
-                                'application/pdf',
-                                'application/msword',
+                                'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+                                'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
+                                'application/pdf', 'application/msword',
                                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                                'text/plain',
-                                'text/markdown',
+                                'text/plain', 'text/markdown',
                             ],
                             'mimeTypesMessage' => 'Разрешены только: изображения (JPG, PNG, GIF, WEBP), аудио (MP3, WAV, OGG), документы (PDF, DOC, DOCX, TXT, MD)',
                         ])
@@ -130,7 +108,7 @@ class BlogType extends AbstractType
                     'class' => 'form-control',
                     'accept' => 'image/*,audio/*,.pdf,.doc,.docx,.txt,.md',
                 ],
-                'help' => 'Изображения (JPG, PNG, GIF, WEBP) - макс. 10 МБ. Аудио (MP3, WAV, OGG) - макс. 20 МБ. Документы (PDF, DOC, DOCX, TXT, MD) - макс. 10 МБ. До 5 файлов.',
+                'help' => 'Изображения, аудио, документы. До 5 файлов, макс. 20 МБ каждый.',
             ]);
     }
 

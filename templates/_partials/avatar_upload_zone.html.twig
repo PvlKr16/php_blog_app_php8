@@ -1,0 +1,43 @@
+{# Зона загрузки аватара с drag & drop
+   Параметры:
+   - form: форма Symfony
+   - field_name: имя поля (по умолчанию 'avatarFile')
+#}
+
+{% set field_name = field_name|default('avatarFile') %}
+
+<div class="mb-3">
+    <label class="form-label">Аватар (необязательно)</label>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="avatar-upload-area" id="dropZone">
+                <div class="avatar-upload-icon">📷</div>
+                <p class="mb-2"><strong>Перетащите изображение сюда</strong></p>
+                <p class="text-muted mb-2">или</p>
+                <button type="button" class="btn btn-secondary btn-sm" id="chooseFileBtn">
+                    Выбрать файл
+                </button>
+                <img id="avatarPreview" class="avatar-preview" alt="Предпросмотр">
+                <div id="fileInfo" class="file-info"></div>
+            </div>
+
+            <div style="display: none;">
+                {{ form_widget(attribute(form, field_name)) }}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="alert alert-info">
+                <h6 class="alert-heading">Требования к аватару:</h6>
+                <ul class="mb-0">
+                    <li><strong>Форматы:</strong> JPG, PNG, GIF, WEBP</li>
+                    <li><strong>Максимальный размер:</strong> 5 МБ</li>
+                    <li>Рекомендуется квадратное изображение</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {{ form_errors(attribute(form, field_name)) }}
+</div>
