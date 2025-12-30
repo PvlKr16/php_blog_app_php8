@@ -26,6 +26,9 @@ security:
       logout:
         path: app_logout
         target: home
+        invalidate_session: true
+        delete_cookies:
+          REMEMBERME: { path: /, domain: null }
       entry_point: form_login
       remember_me:
         secret: '%kernel.secret%'

@@ -33,23 +33,25 @@ class NotificationService
     {
         $unreadBlogs = [];
 
-        // Получаем все блоги, где пользователь участник или автор
-        $blogs = $this->dm->getRepository(Blog::class)->createQueryBuilder()
+        // Получаем все блоги, где пользователь участник
+        $participantBlogs = $this->dm->getRepository(Blog::class)->createQueryBuilder()
             ->field('participants')->references($user)
             ->getQuery()
-            ->execute()
-            ->toArray();
+            ->execute();
 
-        // Добавляем блоги, где пользователь автор
+        // Получаем блоги, где пользователь автор
         $authorBlogs = $this->dm->getRepository(Blog::class)->findBy(['author' => $user]);
+
+        // Объединяем блоги
+        $allBlogs = [];
+        foreach ($participantBlogs as $blog) {
+            $allBlogs[$blog->getId()] = $blog;
+        }
         foreach ($authorBlogs as $blog) {
-            $blogs[] = $blog;
+            $allBlogs[$blog->getId()] = $blog;
         }
 
-        // Убираем дубликаты
-        $blogs = array_unique($blogs, SORT_REGULAR);
-
-        foreach ($blogs as $blog) {
+        foreach ($allBlogs as $blog) {
             // Получаем информацию о последнем просмотре
             $blogView = $this->dm->getRepository(BlogView::class)->findOneBy([
                 'user' => $user,
@@ -69,9 +71,11 @@ class NotificationService
             }
 
             // Проверяем, есть ли новые записи с момента последнего просмотра
+            // ИСКЛЮЧАЕМ записи, созданные самим пользователем
             $newPostsCount = $this->dm->getRepository(Post::class)->createQueryBuilder()
                 ->field('blog')->references($blog)
                 ->field('createdAt')->gt($lastViewedAt)
+                ->field('author')->notEqual($user->getId())  // ИСКЛЮЧАЕМ свои записи
                 ->count()
                 ->getQuery()
                 ->execute();
