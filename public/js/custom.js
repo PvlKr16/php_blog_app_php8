@@ -299,6 +299,29 @@ function initAvatarUpload() {
 }
 
 /**
+ * Обновление счётчика уведомлений
+ */
+function updateNotificationCount() {
+    fetch('/api/notifications/count')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('notification-count');
+            if (badge) {
+                badge.textContent = data.count;
+                badge.setAttribute('data-count', data.count);
+
+                // Скрываем если 0
+                if (data.count === 0) {
+                    badge.style.display = 'none';
+                } else {
+                    badge.style.display = 'inline-flex';
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching notification count:', error));
+}
+
+/**
  * Инициализация всех скриптов при загрузке страницы
  */
 window.addEventListener('load', function() {
@@ -320,4 +343,10 @@ window.addEventListener('load', function() {
             closeOnSelect: false
         });
     }
+
+    // Обновляем уведомления
+    updateNotificationCount();
+
+    // Обновляем каждые 3 секунд
+    setInterval(updateNotificationCount, 3000);
 });

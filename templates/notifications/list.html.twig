@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Уведомления{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>🔔 Уведомления</h1>
+
+        {% if unreadBlogs|length > 0 %}
+            <div class="list-group mt-3">
+                {% for item in unreadBlogs %}
+                    <a href="{{ path('blog_show', {'id': item.blog.id}) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">
+                                {{ item.blog.title }}
+                                {% if item.blog.status == 'private' %}
+                                    <span class="badge bg-secondary">🔒 Закрытый</span>
+                                {% else %}
+                                    <span class="badge bg-success">🌐 Общий</span>
+                                {% endif %}
+                            </h5>
+                            <small class="text-muted">{{ item.blog.createdAt|date('d.m.Y') }}</small>
+                        </div>
+                        <p class="mb-1">
+                            {% if item.reason == 'new_blog' %}
+                                <span class="badge bg-primary">Новый блог</span>
+                            {% else %}
+                                <span class="badge bg-info">
+                                    {% if item.newPostsCount == 1 %}
+                                        1 новая запись
+                                    {% elseif item.newPostsCount < 5 %}
+                                        {{ item.newPostsCount }} новые записи
+                                    {% else %}
+                                        {{ item.newPostsCount }} новых записей
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        </p>
+                        <small>Автор: {{ item.blog.author.username }}</small>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info mt-3">
+                <p class="mb-0">📭 У вас нет непрочитанных уведомлений</p>
+            </div>
+        {% endif %}
+
+        <a href="{{ path('blog_list') }}" class="btn btn-secondary mt-3">Назад к блогам</a>
+    </div>
+{% endblock %}

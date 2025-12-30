@@ -32,6 +32,19 @@
                             <a class="nav-link" href="{{ path('category_list') }}">Управление темами</a>
                         </li>
                     {% endif %}
+
+                    {# Колокольчик с уведомлениями #}
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{{ path('notifications_list') }}" style="padding-right: 1.5rem;">
+                            <span style="font-size: 24px;">🔔</span>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge"
+                                  id="notification-count"
+                                  style="font-size: 12px; min-width: 18px; height: 18px; padding: 2px 6px; margin-left: -10px;">
+                                0
+                            </span>
+                        </a>
+                    </li>
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             {% if app.user.avatar %}

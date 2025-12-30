@@ -18,6 +18,7 @@ use App\Document\Attachment;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\AddParticipantType;
+use App\Service\NotificationService;
 
 #[Route('/blog')]
 class BlogController extends AbstractController
@@ -121,20 +122,24 @@ class BlogController extends AbstractController
     }
 
     #[Route('/{id}', name: 'blog_show', methods: ['GET'])]
-    public function show(Blog $blog, DocumentManager $dm): Response
+    public function show(Blog $blog, DocumentManager $dm, NotificationService $notificationService): Response
     {
         if (!$blog->canView($this->getUser())) {
             throw $this->createAccessDeniedException('У вас нет доступа к этому блогу.');
         }
 
-        // Загружаем вложения блога - ИСПРАВЛЕНО
+        // Отмечаем блог как прочитанный
+        if ($this->getUser()) {
+            $notificationService->markBlogAsRead($this->getUser(), $blog);
+        }
+
+        // Загружаем вложения блога
+        $blogAttachments = [];
         $attachments = $dm->getRepository(Attachment::class)->findBy(
             ['blog' => $blog],
             ['uploadedAt' => 'ASC']
         );
 
-        // Фильтруем только те, что без поста
-        $blogAttachments = [];
         foreach ($attachments as $attachment) {
             if ($attachment->getPost() === null) {
                 $blogAttachments[] = $attachment;
