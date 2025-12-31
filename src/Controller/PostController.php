@@ -7,13 +7,14 @@ use App\Document\Blog;
 use App\Document\Post;
 use App\Form\PostType;
 use App\Service\FileUploader;
+use App\Service\NotificationService;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/post')]
@@ -211,5 +212,111 @@ class PostController extends AbstractController
         $this->addFlash('success', 'Запись удалена!');
 
         return $this->redirectToRoute('blog_show', ['id' => $blogId]);
+    }
+
+    #[Route('/blog/{blogId}/new/ajax', name: 'post_new_ajax', methods: ['POST'])]
+    public function newAjax(string $blogId, Request $request, DocumentManager $dm, FileUploader $fileUploader, NotificationService $notificationService): JsonResponse
+    {
+        try {
+            if (!$this->getUser()) {
+                return $this->json(['success' => false, 'error' => 'Необходима авторизация'], 401);
+            }
+
+            $blog = $dm->getRepository(Blog::class)->find($blogId);
+            if (!$blog) {
+                return $this->json(['success' => false, 'error' => 'Блог не найден'], 404);
+            }
+
+            if (!$blog->canView($this->getUser())) {
+                return $this->json(['success' => false, 'error' => 'Нет доступа'], 403);
+            }
+
+            $title = $request->request->get('title', '');
+            $content = $request->request->get('content', '');
+
+            if (empty($title) && empty($content)) {
+                return $this->json(['success' => false, 'error' => 'Заголовок или содержание обязательны'], 400);
+            }
+
+            $post = new Post();
+            $post->setTitle($title ?: 'Без заголовка');
+            $post->setContent($content);
+            $post->setBlog($blog);
+            $post->setAuthor($this->getUser());
+
+            $dm->persist($post);
+            $dm->flush();
+
+            // Обработка вложений
+            $attachmentFiles = $request->files->get('attachments', []);
+            $attachments = [];
+
+            if ($attachmentFiles && is_array($attachmentFiles)) {
+                foreach ($attachmentFiles as $file) {
+                    try {
+                        $fileData = $fileUploader->uploadAttachment($file);
+
+                        $attachment = new Attachment();
+                        $attachment->setFilename($fileData['filename']);
+                        $attachment->setOriginalFilename($fileData['originalFilename']);
+                        $attachment->setMimeType($fileData['mimeType']);
+                        $attachment->setFileSize($fileData['fileSize']);
+                        $attachment->setPost($post);
+
+                        $dm->persist($attachment);
+
+                        // Добавляем в массив для возврата
+                        $attachments[] = [
+                            'filename' => $fileData['filename'],
+                            'originalFilename' => $fileData['originalFilename'],
+                            'url' => '/uploads/attachments/' . $fileData['filename']
+                        ];
+
+                    } catch (\Exception $e) {
+                        // Игнорируем ошибки загрузки отдельных файлов
+                    }
+                }
+
+                $dm->flush();
+            }
+
+            try {
+                $notificationService->notifyBlogParticipants($blog, $this->getUser());
+            } catch (\Exception $e) {
+                // Игнорируем ошибки уведомлений
+            }
+
+            $createdAt = $post->getCreatedAt()->format('d M H:i');
+
+            $months = [
+                'Jan' => 'Янв', 'Feb' => 'Фев', 'Mar' => 'Мар', 'Apr' => 'Апр',
+                'May' => 'Май', 'Jun' => 'Июн', 'Jul' => 'Июл', 'Aug' => 'Авг',
+                'Sep' => 'Сен', 'Oct' => 'Окт', 'Nov' => 'Ноя', 'Dec' => 'Дек'
+            ];
+            $createdAt = str_replace(array_keys($months), array_values($months), $createdAt);
+
+            return $this->json([
+                'success' => true,
+                'post' => [
+                    'id' => $post->getId(),
+                    'title' => $post->getTitle(),
+                    'content' => $post->getContent(),
+                    'createdAt' => $createdAt,
+                    'author' => [
+                        'username' => $this->getUser()->getUsername(),
+                        'avatar' => $this->getUser()->getAvatar(),
+                    ],
+                    'attachments' => $attachments, // ДОБАВЛЕНО
+                    'canEdit' => true,
+                    'url' => $this->generateUrl('post_show', ['id' => $post->getId()]),
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Ошибка сервера: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

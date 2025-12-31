@@ -146,16 +146,30 @@ class BlogController extends AbstractController
             }
         }
 
-        // Загружаем записи блога
+        // Загружаем записи блога (ОТ СТАРОЙ К НОВОЙ)
         $posts = $dm->getRepository(Post::class)->findBy(
             ['blog' => $blog],
-            ['createdAt' => 'DESC']
+            ['createdAt' => 'ASC']
         );
+
+        // НОВОЕ: Загружаем вложения для каждой записи
+        $postsWithAttachments = [];
+        foreach ($posts as $post) {
+            $postAttachments = $dm->getRepository(Attachment::class)->findBy(
+                ['post' => $post],
+                ['uploadedAt' => 'ASC']
+            );
+
+            $postsWithAttachments[] = [
+                'post' => $post,
+                'attachments' => $postAttachments
+            ];
+        }
 
         return $this->render('blog/show.html.twig', [
             'blog' => $blog,
             'attachments' => $blogAttachments,
-            'posts' => $posts,
+            'posts' => $postsWithAttachments, // Передаём массив с вложениями
         ]);
     }
 

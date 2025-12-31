@@ -3,145 +3,275 @@
 {% block title %}{{ blog.title }}{% endblock %}
 
 {% block body %}
-    <div class="container mt-4">
-        <div class="card">
-            <div class="card-header">
-                <h3>{{ blog.title }}</h3>
+    <div class="container-fluid mt-4" style="padding-bottom: 120px;"> {# Отступ для fixed формы #}
+
+        {# ====== ЗАГОЛОВОК БЛОГА ====== #}
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            {# Левая часть #}
+            <div class="d-flex align-items-center gap-3">
+                <h2 class="mb-0">{{ blog.title }}</h2>
+                <button class="btn btn-outline-secondary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#participantsModal">
+                    <i class="bi bi-people"></i> Участники
+                </button>
             </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    Автор: <strong>{{ blog.author.username }}</strong><br>
-                    Тема: <strong>{{ blog.category ? blog.category.name : 'Без темы' }}</strong><br>
-                    Статус: <strong>{{ blog.status == 'public' ? '🌐 Общий' : '🔒 Закрытый' }}</strong>
 
-                    {% if blog.participants|length > 0 %}
-                    <br><br>
-                    <strong>Участники блога ({{ blog.participants|length }}):</strong>
-                <div class="mt-2">
-                    {% for participant in blog.participants %}
-                        <span class="badge bg-secondary me-1">
-                                    {% if participant.avatar %}
-                                        <img src="/uploads/avatars/{{ participant.avatar }}"
-                                             style="width:20px;height:20px;border-radius:50%;object-fit:cover;margin-right:4px;vertical-align:middle;">
-                                    {% endif %}
-                            {{ participant.username }}
-                            {% if participant == blog.author %}
-                                👑
-                            {% endif %}
+            {# Правая часть #}
+            <div class="d-flex align-items-center gap-3">
+            <span class="text-muted">
+                <i class="bi bi-person-circle"></i> {{ blog.author.username }}
+            </span>
+                <span class="text-muted">
+                {{ blog.createdAt|date('d M') }}
+            </span>
+                <div class="dropdown">
+                    <button class="btn btn-link text-dark p-0"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="bi bi-three-dots-vertical fs-5"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        {% if app.user == blog.author %}
+                            <li>
+                                <a class="dropdown-item" href="{{ path('blog_edit', {'id': blog.id}) }}">
+                                    <i class="bi bi-pencil"></i> Редактировать
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li>
+                            <a class="dropdown-item copy-link" href="#" data-url="{{ url('blog_show', {'id': blog.id}) }}">
+                                <i class="bi bi-link-45deg"></i> Скопировать ссылку
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-                            {# Кнопка удаления - только для себя (кроме автора) #}
-                            {% if app.user and app.user == participant and participant != blog.author %}
-                                <form method="post"
-                                      action="{{ path('blog_remove_participant', {'blogId': blog.id, 'userId': participant.id}) }}"
-                                      style="display:inline;">
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-link p-0 ms-1"
-                                                    style="color:#dc3545;text-decoration:none;font-size:14px;"
-                                                    onclick="return confirm('Удалить себя из участников?');"
-                                                    title="Покинуть блог">
-                                                ✕
-                                            </button>
-                                        </form>
-                            {% endif %}
-                                </span>
+        {# ====== КОНТЕНТ БЛОГА ====== #}
+        <div class="mb-4">
+            {% if blog.content %}
+                <div class="mb-3">{{ blog.content|nl2br }}</div>
+            {% endif %}
+
+            {# Вложенные файлы блога #}
+            {% if attachments|length > 0 %}
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Файлы:</h6>
+                    {% for attachment in attachments %}
+                        <div class="d-inline-block me-2 mb-2">
+                            <a href="/uploads/attachments/{{ attachment.filename }}"
+                               class="btn btn-sm btn-outline-secondary"
+                               target="_blank">
+                                📎 {{ attachment.originalFilename }}
+                            </a>
+                        </div>
                     {% endfor %}
                 </div>
-                {% endif %}
+            {% endif %}
+        </div>
 
-                {# Кнопка добавления участника - видна ВСЕМ авторизованным #}
-                {% if app.user %}
-                    <div class="mt-3 mb-3">
-                        <a href="{{ path('blog_add_participant', {'id': blog.id}) }}" class="btn btn-sm btn-outline-primary">
-                            ➕ Добавить участника
-                        </a>
+        {# ====== СПИСОК ЗАПИСЕЙ ====== #}
+        <div id="posts-container">
+            {% for item in posts %}
+                {% set post = item.post %}
+                {% set postAttachments = item.attachments %}
+                <div class="card mb-3 post-item" data-post-id="{{ post.id }}">
+                    {# Заголовок записи #}
+                    <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if post.author.avatar %}
+                                <img src="/uploads/avatars/{{ post.author.avatar }}"
+                                     class="rounded-circle"
+                                     style="width: 32px; height: 32px; object-fit: cover;">
+                            {% else %}
+                                <i class="bi bi-person-circle fs-4"></i>
+                            {% endif %}
+                            <strong>{{ post.author.username }}</strong>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3">
+                        <span class="text-muted small">
+                            {{ post.createdAt|date('d M H:i') }}
+                        </span>
+                            <div class="dropdown">
+                                <button class="btn btn-link text-dark p-0"
+                                        type="button"
+                                        data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    {% if app.user == post.author %}
+                                        <li>
+                                            <a class="dropdown-item" href="{{ path('post_edit', {'id': post.id}) }}">
+                                                <i class="bi bi-pencil"></i> Редактировать
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a class="dropdown-item copy-link" href="#" data-url="{{ url('post_show', {'id': post.id}) }}">
+                                            <i class="bi bi-link-45deg"></i> Скопировать ссылку
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                {% endif %}
 
-                <br>Создано: {{ blog.createdAt|date('d.m.Y H:i') }}
-                {% if blog.updatedAt > blog.createdAt %}
-                    <br>Обновлено: {{ blog.updatedAt|date('d.m.Y H:i') }}
-                {% endif %}
-                </p>
+                    {# Контент записи #}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.content|nl2br }}</p>
 
-                <hr>
-                <div>
-                    {{ blog.content|nl2br }}
+                        {# Файлы записи #}
+                        {% if postAttachments|length > 0 %}
+                            <div class="mt-3">
+                                <h6 class="text-muted mb-2">Файлы:</h6>
+                                {% for attachment in postAttachments %}
+                                    <div class="d-inline-block me-2 mb-2">
+                                        <a href="/uploads/attachments/{{ attachment.filename }}"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           target="_blank">
+                                            📎 {{ attachment.originalFilename }}
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
+            {% else %}
+                <p class="text-muted text-center py-4">Записей пока нет. Добавьте первую запись!</p>
+            {% endfor %}
+        </div>
+    </div>
 
-                {% if attachments is not empty %}
-                    <hr>
-                    <h5>📎 Прикреплённые файлы ({{ attachments|length }})</h5>
-                    <div class="list-group">
-                        {% for attachment in attachments %}
+    {# ====== MODAL: УЧАСТНИКИ ====== #}
+    <div class="modal fade" id="participantsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Участники блога ({{ blog.participants|length }})</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group mb-3">
+                        {% for participant in blog.participants %}
                             <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <span style="font-size: 24px;">{{ attachment.icon }}</span>
-                                    <a href="/uploads/attachments/{{ attachment.filename }}" target="_blank" class="ms-2">
-                                        {{ attachment.originalFilename }}
-                                    </a>
-                                    <small class="text-muted ms-2">({{ attachment.fileSizeFormatted }})</small>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if participant.avatar %}
+                                        <img src="/uploads/avatars/{{ participant.avatar }}"
+                                             class="rounded-circle"
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <i class="bi bi-person-circle fs-3"></i>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ participant.username }}</strong>
+                                        {% if participant == blog.author %}
+                                            <span class="badge bg-primary ms-2">Автор</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                {% if app.user and app.user == blog.author %}
-                                    <form method="post" action="{{ path('attachment_delete', {'id': attachment.id}) }}" style="display: inline;">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить файл?');">
-                                            Удалить
+
+                                {% if app.user == participant and participant != blog.author %}
+                                    <form method="post"
+                                          action="{{ path('blog_remove_participant', {'blogId': blog.id, 'userId': participant.id}) }}"
+                                          style="display: inline;">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Вы уверены, что хотите покинуть блог?')">
+                                            <i class="bi bi-x-lg"></i>
                                         </button>
                                     </form>
                                 {% endif %}
                             </div>
                         {% endfor %}
                     </div>
-                {% endif %}
 
-                {# СЕКЦИЯ ЗАПИСЕЙ #}
-                <hr>
-                <div class="posts-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>📝 Записи в блоге ({{ posts|length }})</h4>
-                        {% if app.user %}
-                            <a href="{{ path('post_new', {'blogId': blog.id}) }}" class="btn btn-sm btn-primary">
-                                ➕ Добавить запись
-                            </a>
-                        {% endif %}
-                    </div>
-
-                    {% if posts|length > 0 %}
-                        <div class="list-group">
-                            {% for post in posts %}
-                                <a href="{{ path('post_show', {'id': post.id}) }}" class="list-group-item list-group-item-action">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h5 class="mb-1">{{ post.title }}</h5>
-                                            <p class="mb-1 text-muted">{{ post.content|length > 150 ? post.content|slice(0, 150) ~ '...' : post.content }}</p>
-                                            <small>
-                                                Автор: {{ post.author.username }} |
-                                                {{ post.createdAt|date('d.m.Y H:i') }}
-                                            </small>
-                                        </div>
-                                    </div>
-                                </a>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted">В блоге пока нет записей. Добавьте первую!</p>
-                    {% endif %}
+                    <a href="{{ path('blog_add_participant', {'id': blog.id}) }}"
+                       class="btn btn-primary w-100">
+                        <i class="bi bi-plus-lg"></i> Добавить участника
+                    </a>
                 </div>
-            </div>
-            <div class="card-footer">
-                <a href="{{ path('blog_list') }}" class="btn btn-secondary">Назад к списку</a>
-
-                {% if app.user and app.user == blog.author %}
-                    <a href="{{ path('blog_edit', {'id': blog.id}) }}" class="btn btn-warning">Редактировать</a>
-
-                    <form method="post" action="{{ path('blog_delete', {'id': blog.id}) }}" style="display: inline-block;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Вы уверены, что хотите удалить этот блог?');">
-                            Удалить
-                        </button>
-                    </form>
-                {% endif %}
             </div>
         </div>
     </div>
+
+    {# ====== FIXED ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ ====== #}
+    <div class="fixed-bottom bg-white border-top shadow-lg p-3 post-form-container">
+        <div class="container-fluid">
+            <form id="new-post-form" class="d-flex align-items-center gap-2">
+                <input type="text"
+                       id="post-content-input"
+                       class="form-control"
+                       placeholder="Добавить запись..."
+                       autocomplete="off">
+
+                <button type="button"
+                        id="send-button"
+                        class="btn btn-primary rounded-circle send-post-btn"
+                        style="display: none;">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary rounded-circle add-post-btn"
+                            type="button"
+                            data-bs-toggle="dropdown">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item open-file-upload" href="#">
+                                <i class="bi bi-paperclip"></i> Файл
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-muted disabled-menu-item" href="#">
+                                <i class="bi bi-bar-chart"></i> Опрос
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-muted disabled-menu-item" href="#">
+                                <i class="bi bi-type-h1"></i> Заголовок
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <input type="file"
+                       id="post-file-input"
+                       name="attachments[]"
+                       multiple
+                       style="display: none;">
+            </form>
+
+            <div id="selected-files" class="mt-2" style="display: none;">
+                <small class="text-muted">Выбрано файлов: <span id="file-count">0</span></small>
+            </div>
+        </div>
+    </div>
+
+    {# Toast для "Скопировано!" #}
+    <div class="position-fixed bottom-0 end-0 p-3 toast-container-custom">
+        <div id="copyToast" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill"></i> Скопировано!
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Передаём данные в JS
+        window.blogShowData = {
+            blogId: '{{ blog.id }}',
+            currentUserId: '{{ app.user ? app.user.id : '' }}'
+        };
+    </script>
 {% endblock %}

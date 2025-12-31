@@ -3,9 +3,6 @@
  */
 
 /**
- * Инициализация drag & drop для файлов (блоги)
- */
-/**
  * Инициализация drag & drop для файлов (блоги, записи и т.д.)
  */
 function initFilesUpload() {
@@ -194,27 +191,21 @@ function initAvatarUpload() {
     const currentAvatar = document.getElementById('currentAvatar');
 
     if (!dropZone || !fileInput || !chooseFileBtn) {
-        return; // Элементы не найдены на странице
+        return;
     }
 
-    // Кнопка "Выбрать файл"
     chooseFileBtn.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         fileInput.click();
     });
 
-    // УДАЛЯЕМ обработчик клика на dropZone - он блокирует форму!
-    // Вместо этого только drag & drop
-
-    // Изменение файла через input
     fileInput.addEventListener('change', function(e) {
         if (e.target.files && e.target.files.length > 0) {
             handleFiles(e.target.files);
         }
     });
 
-    // Drag & Drop события - ТОЛЬКО на dropZone
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, function(e) {
             e.preventDefault();
@@ -238,7 +229,6 @@ function initAvatarUpload() {
 
     dropZone.addEventListener('drop', function(e) {
         dropZone.classList.remove('dragover');
-
         const dt = e.dataTransfer;
         const files = dt.files;
 
@@ -246,7 +236,6 @@ function initAvatarUpload() {
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(files[0]);
             fileInput.files = dataTransfer.files;
-
             handleFiles(files);
         }
     });
@@ -258,32 +247,27 @@ function initAvatarUpload() {
 
         const file = files[0];
 
-        // Проверка типа файла
         if (!file.type.match('image.*')) {
             alert('Пожалуйста, выберите изображение');
             fileInput.value = '';
             return;
         }
 
-        // Проверка размера (5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert('Файл слишком большой. Максимум 5 МБ');
             fileInput.value = '';
             return;
         }
 
-        // Показываем информацию о файле
         const fileSizeKB = (file.size / 1024).toFixed(2);
         if (fileInfo) {
             fileInfo.innerHTML = '<strong>' + file.name + '</strong><br>' + fileSizeKB + ' КБ';
         }
 
-        // Скрываем текущий аватар, если есть
         if (currentAvatar) {
             currentAvatar.style.display = 'none';
         }
 
-        // Показываем превью нового
         if (preview) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -310,7 +294,6 @@ function updateNotificationCount() {
                 badge.textContent = data.count;
                 badge.setAttribute('data-count', data.count);
 
-                // Скрываем если 0
                 if (data.count === 0) {
                     badge.style.display = 'none';
                 } else {
@@ -319,6 +302,300 @@ function updateNotificationCount() {
             }
         })
         .catch(error => console.error('Error fetching notification count:', error));
+}
+
+/**
+ * Инициализация страницы блога
+ */
+function initBlogShow() {
+    // Проверяем что мы на странице блога
+    if (!window.blogShowData) {
+        return;
+    }
+
+    const blogId = window.blogShowData.blogId;
+
+    // Показать/скрыть кнопку отправки
+    const postInput = document.getElementById('post-content-input');
+    if (postInput) {
+        postInput.addEventListener('input', toggleSendButton);
+    }
+
+    // Кнопка отправки
+    const sendButton = document.getElementById('send-button');
+    if (sendButton) {
+        sendButton.addEventListener('click', submitPost);
+    }
+
+    // Открыть выбор файла
+    const openFileBtn = document.querySelector('.open-file-upload');
+    if (openFileBtn) {
+        openFileBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('post-file-input').click();
+        });
+    }
+
+    // Обработка выбора файлов
+    const fileInput = document.getElementById('post-file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', handlePostFileSelect);
+    }
+
+    // Копирование ссылок
+    document.querySelectorAll('.copy-link').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            copyToClipboard(url);
+        });
+    });
+
+    // Отключить клики по disabled пунктам меню
+    document.querySelectorAll('.disabled-menu-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+        });
+    });
+}
+
+/**
+ * Показать/скрыть кнопку отправки записи
+ */
+function toggleSendButton() {
+    const input = document.getElementById('post-content-input');
+    const fileInput = document.getElementById('post-file-input');
+    const sendButton = document.getElementById('send-button');
+
+    if (!input || !fileInput || !sendButton) {
+        return;
+    }
+
+    if (input.value.trim().length > 0 || fileInput.files.length > 0) {
+        sendButton.style.display = 'flex';
+    } else {
+        sendButton.style.display = 'none';
+    }
+}
+
+/**
+ * Обработка выбора файлов для записи
+ */
+function handlePostFileSelect() {
+    const fileInput = document.getElementById('post-file-input');
+    const filesDiv = document.getElementById('selected-files');
+    const fileCount = document.getElementById('file-count');
+
+    if (!fileInput || !filesDiv || !fileCount) {
+        return;
+    }
+
+    if (fileInput.files.length > 0) {
+        filesDiv.style.display = 'block';
+        fileCount.textContent = fileInput.files.length;
+        toggleSendButton();
+    } else {
+        filesDiv.style.display = 'none';
+    }
+}
+
+/**
+ * Отправка новой записи через AJAX
+ */
+async function submitPost() {
+    const input = document.getElementById('post-content-input');
+    const fileInput = document.getElementById('post-file-input');
+    const blogId = window.blogShowData.blogId;
+
+    if (!input || !fileInput) {
+        return;
+    }
+
+    const content = input.value.trim();
+
+    if (!content && fileInput.files.length === 0) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('title', content.substring(0, 50) || 'Без заголовка');
+
+    for (let file of fileInput.files) {
+        formData.append('attachments[]', file);
+    }
+
+    const url = `/post/blog/${blogId}/new/ajax`; // ← ИСПРАВИЛИ
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            addPostToList(data.post);
+
+            input.value = '';
+            fileInput.value = '';
+            document.getElementById('selected-files').style.display = 'none';
+            toggleSendButton();
+        } else {
+            alert('Ошибка: ' + (data.error || 'Не удалось добавить запись'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Ошибка при добавлении записи');
+    }
+}
+
+/**
+ * Добавить новую запись в список
+ */
+function addPostToList(post) {
+    const container = document.getElementById('posts-container');
+
+    if (!container) {
+        return;
+    }
+
+    // Убираем сообщение "Записей пока нет"
+    const emptyMessage = container.querySelector('p.text-muted');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+
+    const avatarHtml = post.author.avatar ?
+        `<img src="/uploads/avatars/${post.author.avatar}" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover;">` :
+        `<i class="bi bi-person-circle fs-4"></i>`;
+
+    const editMenuHtml = post.canEdit ?
+        `<li>
+            <a class="dropdown-item" href="/post/${post.id}/edit">
+                <i class="bi bi-pencil"></i> Редактировать
+            </a>
+        </li>` : '';
+
+    // Генерируем HTML для файлов
+    let attachmentsHtml = '';
+    if (post.attachments && post.attachments.length > 0) {
+        attachmentsHtml = `
+            <div class="mt-3">
+                <h6 class="text-muted mb-2">Файлы:</h6>
+                ${post.attachments.map(att => `
+                    <div class="d-inline-block me-2 mb-2">
+                        <a href="${att.url}" 
+                           class="btn btn-sm btn-outline-secondary" 
+                           target="_blank">
+                            📎 ${escapeHtml(att.originalFilename)}
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    const postHtml = `
+        <div class="card mb-3 post-item" data-post-id="${post.id}">
+            <div class="card-header d-flex justify-content-between align-items-center bg-white">
+                <div class="d-flex align-items-center gap-2">
+                    ${avatarHtml}
+                    <strong>${escapeHtml(post.author.username)}</strong>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-muted small">${post.createdAt}</span>
+                    <div class="dropdown">
+                        <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots-vertical"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            ${editMenuHtml}
+                            <li>
+                                <a class="dropdown-item copy-link" href="#" data-url="${post.url}">
+                                    <i class="bi bi-link-45deg"></i> Скопировать ссылку
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">${escapeHtml(post.title)}</h5>
+                <p class="card-text">${escapeHtml(post.content).replace(/\n/g, '<br>')}</p>
+                ${attachmentsHtml}
+            </div>
+        </div>
+    `;
+
+    // Добавляем в конец списка (новые записи внизу)
+    container.insertAdjacentHTML('beforeend', postHtml);
+
+    // Добавляем обработчик для копирования ссылки
+    const newPost = container.lastElementChild;
+    const copyLink = newPost.querySelector('.copy-link');
+    if (copyLink) {
+        copyLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            copyToClipboard(url);
+        });
+    }
+}
+
+/**
+ * Копирование в буфер обмена
+ */
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        showCopyToast();
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        // Fallback для старых браузеров
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showCopyToast();
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+/**
+ * Показать toast "Скопировано!"
+ */
+function showCopyToast() {
+    const toastEl = document.getElementById('copyToast');
+    if (toastEl && typeof bootstrap !== 'undefined') {
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+}
+
+/**
+ * Экранирование HTML
+ */
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
 /**
@@ -347,6 +624,9 @@ window.addEventListener('load', function() {
     // Обновляем уведомления
     updateNotificationCount();
 
-    // Обновляем каждые 3 секунд
-    setInterval(updateNotificationCount, 3000);
+    // Обновляем каждые 30 секунд
+    setInterval(updateNotificationCount, 30000);
+
+    // Инициализируем страницу блога
+    initBlogShow();
 });

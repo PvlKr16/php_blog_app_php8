@@ -416,3 +416,57 @@ table {
 .notification-badge[data-count="0"] {
     display: none !important;
 }
+
+/* ============================================
+   БЛОГ: FIXED ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ
+   ============================================ */
+
+.post-form-container {
+    z-index: 1000;
+}
+
+.send-post-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-post-btn {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disabled-menu-item {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.disabled-menu-item:hover {
+    background-color: transparent !important;
+}
+
+/* Toast container */
+.toast-container-custom {
+    z-index: 1100;
+}
+
+/* Карточки записей */
+.post-item {
+    transition: box-shadow 0.2s;
+}
+
+.post-item:hover {
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Иконка меню */
+.bi-three-dots-vertical {
+    cursor: pointer;
+}

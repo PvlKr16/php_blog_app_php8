@@ -113,4 +113,34 @@ class NotificationService
         $this->dm->persist($blogView);
         $this->dm->flush();
     }
+
+    /**
+     * Уведомить всех участников блога о новой записи
+     */
+    public function notifyBlogParticipants(Blog $blog, User $excludeUser = null): void
+    {
+        // Уведомляем автора блога
+        if ($blog->getAuthor() && (!$excludeUser || $blog->getAuthor()->getId() !== $excludeUser->getId())) {
+            $this->invalidateCache($blog->getAuthor());
+        }
+
+        // Уведомляем всех участников
+        foreach ($blog->getParticipants() as $participant) {
+            if (!$excludeUser || $participant->getId() !== $excludeUser->getId()) {
+                $this->invalidateCache($participant);
+            }
+        }
+    }
+
+    /**
+     * Инвалидировать кэш для пользователя
+     */
+    private function invalidateCache(User $user): void
+    {
+        $userId = $user->getId();
+        if (isset($this->cache[$userId])) {
+            unset($this->cache[$userId]);
+        }
+    }
+
 }
