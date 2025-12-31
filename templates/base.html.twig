@@ -35,11 +35,11 @@
 
                     {# Колокольчик с уведомлениями #}
                     <li class="nav-item">
-                        <a class="nav-link position-relative" href="{{ path('notifications_list') }}" style="padding-right: 1.5rem;">
-                            <span style="font-size: 24px;">🔔</span>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge"
+                        <a class="nav-link position-relative" href="{{ path('notifications_list') }}">
+                            <span style="font-size: 24px; position: relative; left: 5px;">🔔</span>
+                            <span class="position-absolute badge rounded-pill bg-danger notification-badge"
                                   id="notification-count"
-                                  style="font-size: 12px; min-width: 18px; height: 18px; padding: 2px 6px; margin-left: -10px;">
+                                  style="font-size: 12px; min-width: 18px; height: 18px; padding: 2px 6px; top: 8px; right: -1px;">
                                 0
                             </span>
                         </a>
