@@ -470,3 +470,44 @@ table {
 .bi-three-dots-vertical {
     cursor: pointer;
 }
+
+/* Dropdown на hover */
+.dropdown-hover {
+    position: relative;
+}
+
+.dropdown-hover .create-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 10rem;
+    margin-top: 0.125rem;
+}
+
+.dropdown-hover:hover .create-dropdown {
+    display: block;
+}
+
+.create-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.create-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Анимация вращения иконки + */
+.create-btn i {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-hover:hover .create-btn i {
+    transform: rotate(45deg);
+}

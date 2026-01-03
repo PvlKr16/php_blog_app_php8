@@ -2,11 +2,15 @@
 
 namespace App\Controller;
 
+use App\Document\Attachment;
 use App\Document\Blog;
 use App\Document\Category;
 use App\Document\Post;
 use App\Document\User;
+use App\Form\AddParticipantType;
 use App\Form\BlogType;
+use App\Service\FileUploader;
+use App\Service\NotificationService;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,11 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use App\Document\Attachment;
-use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use App\Form\AddParticipantType;
-use App\Service\NotificationService;
+
 
 #[Route('/blog')]
 class BlogController extends AbstractController

@@ -34,9 +34,30 @@
                     <a class="nav-link" href="{{ path('blog_list') }}">Блоги</a>
                 </li>
                 {% if app.user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('blog_new') }}">Создать блог</a>
+                    {# Кнопка создания с dropdown на hover #}
+                    <li class="nav-item dropdown-hover">
+                        <button class="btn btn-outline-light rounded-circle create-btn" type="button" style="width: 40px; height: 40px; padding: 0; margin: 4px 8px;">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end create-dropdown">
+                            <li>
+                                <a class="dropdown-item text-muted" href="#" style="pointer-events: none;">
+                                    Запрос
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ path('blog_new') }}">
+                                    Блог
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-muted" href="#" style="pointer-events: none;">
+                                    Опрос
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
                     {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('category_list') }}">Управление темами</a>
