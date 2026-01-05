@@ -15,3 +15,5 @@ jobs:
         run: composer install --prefer-dist --no-progress --ignore-platform-req=ext-mongodb
       - name: Security Check
         run: composer audit
+      - name: Copy .env
+        run: cp .env.test .env
