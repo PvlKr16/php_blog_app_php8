@@ -241,44 +241,39 @@ function initAvatarUpload() {
     });
 
     function handleFiles(files) {
-        if (files.length === 0) {
-            return;
-        }
+        if (files.length === 0) return;
 
         const file = files[0];
 
+        // Проверка типа
         if (!file.type.match('image.*')) {
             alert('Пожалуйста, выберите изображение');
-            fileInput.value = '';
             return;
         }
 
+        // Проверка размера (5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert('Файл слишком большой. Максимум 5 МБ');
-            fileInput.value = '';
             return;
         }
 
-        const fileSizeKB = (file.size / 1024).toFixed(2);
-        if (fileInfo) {
-            fileInfo.innerHTML = '<strong>' + file.name + '</strong><br>' + fileSizeKB + ' КБ';
-        }
+        // Показываем превью
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
 
-        if (currentAvatar) {
-            currentAvatar.style.display = 'none';
-        }
+            if (currentAvatar) {
+                currentAvatar.style.display = 'none';
+            }
 
-        if (preview) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-            };
-            reader.onerror = function(e) {
-                console.error('Ошибка при чтении файла:', e);
-            };
-            reader.readAsDataURL(file);
-        }
+            if (fileInfo) {
+                const sizeKB = (file.size / 1024).toFixed(2);
+                fileInfo.textContent = `Выбран: ${file.name} (${sizeKB} KB)`;
+                fileInfo.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
     }
 }
 
@@ -291,97 +286,58 @@ function updateNotificationCount() {
         .then(data => {
             const badge = document.getElementById('notification-count');
             if (badge) {
-                badge.textContent = data.count;
-                badge.setAttribute('data-count', data.count);
-
-                if (data.count === 0) {
-                    badge.style.display = 'none';
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'inline-block';
                 } else {
-                    badge.style.display = 'inline-flex';
+                    badge.style.display = 'none';
                 }
             }
         })
-        .catch(error => console.error('Error fetching notification count:', error));
+        .catch(error => console.error('Error fetching notifications:', error));
 }
 
 /**
- * Инициализация страницы блога
+ * Инициализация страницы блога (если есть)
  */
 function initBlogShow() {
-    // Проверяем что мы на странице блога
-    if (!window.blogShowData) {
+    if (typeof window.blogShowData === 'undefined') {
         return;
     }
 
-    const blogId = window.blogShowData.blogId;
+    const addPostBtn = document.getElementById('add-post-btn');
+    const openFileUploadBtn = document.querySelector('.open-file-upload');
+    const fileInput = document.getElementById('post-file-input');
 
-    // Показать/скрыть кнопку отправки
-    const postInput = document.getElementById('post-content-input');
-    if (postInput) {
-        postInput.addEventListener('input', toggleSendButton);
+    if (addPostBtn) {
+        addPostBtn.addEventListener('click', submitPost);
     }
 
-    // Кнопка отправки
-    const sendButton = document.getElementById('send-button');
-    if (sendButton) {
-        sendButton.addEventListener('click', submitPost);
-    }
-
-    // Открыть выбор файла
-    const openFileBtn = document.querySelector('.open-file-upload');
-    if (openFileBtn) {
-        openFileBtn.addEventListener('click', function(e) {
+    if (openFileUploadBtn && fileInput) {
+        openFileUploadBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            document.getElementById('post-file-input').click();
+            fileInput.click();
         });
     }
 
-    // Обработка выбора файлов
-    const fileInput = document.getElementById('post-file-input');
     if (fileInput) {
-        fileInput.addEventListener('change', handlePostFileSelect);
+        fileInput.addEventListener('change', updateSelectedFiles);
     }
 
     // Копирование ссылок
-    document.querySelectorAll('.copy-link').forEach(function(link) {
+    document.querySelectorAll('.copy-link').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const url = this.getAttribute('data-url');
             copyToClipboard(url);
         });
     });
-
-    // Отключить клики по disabled пунктам меню
-    document.querySelectorAll('.disabled-menu-item').forEach(function(item) {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-        });
-    });
 }
 
 /**
- * Показать/скрыть кнопку отправки записи
+ * Обновление списка выбранных файлов
  */
-function toggleSendButton() {
-    const input = document.getElementById('post-content-input');
-    const fileInput = document.getElementById('post-file-input');
-    const sendButton = document.getElementById('send-button');
-
-    if (!input || !fileInput || !sendButton) {
-        return;
-    }
-
-    if (input.value.trim().length > 0 || fileInput.files.length > 0) {
-        sendButton.style.display = 'flex';
-    } else {
-        sendButton.style.display = 'none';
-    }
-}
-
-/**
- * Обработка выбора файлов для записи
- */
-function handlePostFileSelect() {
+function updateSelectedFiles() {
     const fileInput = document.getElementById('post-file-input');
     const filesDiv = document.getElementById('selected-files');
     const fileCount = document.getElementById('file-count');
@@ -397,6 +353,21 @@ function handlePostFileSelect() {
     } else {
         filesDiv.style.display = 'none';
     }
+}
+
+function toggleSendButton() {
+    const input = document.getElementById('post-content-input');
+    const fileInput = document.getElementById('post-file-input');
+    const sendBtn = document.getElementById('add-post-btn');
+
+    if (!input || !fileInput || !sendBtn) {
+        return;
+    }
+
+    const hasContent = input.value.trim().length > 0;
+    const hasFiles = fileInput.files.length > 0;
+
+    sendBtn.disabled = !hasContent && !hasFiles;
 }
 
 /**
@@ -425,7 +396,7 @@ async function submitPost() {
         formData.append('attachments[]', file);
     }
 
-    const url = `/post/blog/${blogId}/new/ajax`; // ← ИСПРАВИЛИ
+    const url = `/post/blog/${blogId}/new/ajax`;
 
     try {
         const response = await fetch(url, {
@@ -599,6 +570,141 @@ function escapeHtml(text) {
 }
 
 /**
+ * Инициализация формы регистрации пользователя
+ */
+function initRegistrationForm() {
+    const registrationForm = document.getElementById('registration-form');
+    
+    if (!registrationForm) {
+        return; // Не на странице регистрации
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('newDepartmentModal'));
+    const customSelect = $('#custom-department-select');
+    const hiddenInput = $('#registration_form_departmentId');
+    const newDepartmentInput = $('#new-department-name');
+    const departmentError = $('#department-error');
+    const createBtn = $('#create-department-btn');
+
+    // Загружаем список подразделений
+    function loadDepartments(selectedId) {
+        $.ajax({
+            url: window.departmentsApiUrl,
+            method: 'GET',
+            success: function(departments) {
+                // Очищаем, кроме первых двух опций
+                customSelect.find('option').slice(2).remove();
+                
+                // Добавляем подразделения
+                departments.forEach(function(dept) {
+                    const option = $('<option></option>')
+                        .attr('value', dept.id)
+                        .text(dept.text);
+                    customSelect.append(option);
+                });
+                
+                // Выбираем нужное
+                if (selectedId) {
+                    customSelect.val(selectedId);
+                    hiddenInput.val(selectedId);
+                }
+            }
+        });
+    }
+
+    // Загружаем при инициализации
+    loadDepartments();
+
+    // Синхронизируем кастомный select со скрытым полем
+    customSelect.on('change', function() {
+        const value = $(this).val();
+        
+        if (value === '__new__') {
+            modal.show();
+            newDepartmentInput.val('').removeClass('is-invalid');
+            departmentError.text('');
+        } else {
+            hiddenInput.val(value);
+        }
+    });
+
+    // Создание подразделения
+    createBtn.on('click', function() {
+        const name = newDepartmentInput.val().trim();
+        
+        if (!name) {
+            newDepartmentInput.addClass('is-invalid');
+            departmentError.text('Название не может быть пустым');
+            return;
+        }
+
+        createBtn.prop('disabled', true).text('Создание...');
+
+        $.ajax({
+            url: window.departmentsCreateApiUrl,
+            method: 'POST',
+            data: { name: name },
+            success: function(response) {
+                if (response.success) {
+                    // Перезагружаем список и выбираем новое
+                    loadDepartments(response.department.id);
+                    
+                    // Закрываем модалку
+                    modal.hide();
+                    
+                    // Показываем уведомление
+                    const alertDiv = $('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        'Подразделение "' + response.department.name + '" создано!' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                        '</div>');
+                    $('.card-body').prepend(alertDiv);
+                    
+                    setTimeout(function() {
+                        alertDiv.fadeOut(function() { $(this).remove(); });
+                    }, 3000);
+                } else {
+                    newDepartmentInput.addClass('is-invalid');
+                    departmentError.text(response.error);
+                }
+            },
+            error: function(xhr) {
+                const response = xhr.responseJSON;
+                newDepartmentInput.addClass('is-invalid');
+                departmentError.text(response && response.error ? response.error : 'Ошибка сервера');
+            },
+            complete: function() {
+                createBtn.prop('disabled', false).text('Создать');
+            }
+        });
+    });
+
+    // Сброс при закрытии модалки
+    $('#newDepartmentModal').on('hidden.bs.modal', function() {
+        if (customSelect.val() === '__new__') {
+            customSelect.val('');
+            hiddenInput.val('');
+        }
+    });
+
+    // Убираем ошибку при вводе
+    newDepartmentInput.on('input', function() {
+        $(this).removeClass('is-invalid');
+        departmentError.text('');
+    });
+
+    // Проверка перед отправкой
+    registrationForm.addEventListener('submit', function(e) {
+        const value = hiddenInput.val();
+        
+        if (!value || value === '__new__') {
+            e.preventDefault();
+            alert('Пожалуйста, выберите подразделение');
+            return false;
+        }
+    });
+}
+
+/**
  * Инициализация всех скриптов при загрузке страницы
  */
 window.addEventListener('load', function() {
@@ -629,4 +735,7 @@ window.addEventListener('load', function() {
 
     // Инициализируем страницу блога
     initBlogShow();
+    
+    // Инициализируем форму регистрации
+    initRegistrationForm();
 });

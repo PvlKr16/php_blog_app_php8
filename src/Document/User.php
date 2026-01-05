@@ -40,6 +40,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[MongoDB\Field(type: 'bool')]
     private bool $isAdmin = false;
 
+    #[MongoDB\ReferenceOne(targetDocument: Department::class, cascade: 'persist')]
+    private ?Department $department = null;
+
     #[MongoDB\Field(type: 'date')]
     private \DateTime $createdAt;
 
@@ -191,6 +194,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAbout(?string $about): static
     {
         $this->about = $about;
+        return $this;
+    }
+
+    public function getDepartment(): ?Department
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?Department $department): static
+    {
+        $this->department = $department;
         return $this;
     }
 

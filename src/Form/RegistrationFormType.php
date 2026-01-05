@@ -2,14 +2,19 @@
 
 namespace App\Form;
 
+use App\Document\Department;
 use App\Document\User;
+use Doctrine\ODM\MongoDB\DocumentManager;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\Image;
@@ -18,6 +23,13 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 class RegistrationFormType extends AbstractType
 {
+    private DocumentManager $dm;
+
+    public function __construct(DocumentManager $dm)
+    {
+        $this->dm = $dm;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -62,6 +74,18 @@ class RegistrationFormType extends AbstractType
                     ]),
                 ],
             ])
+            ->add('departmentId', TextType::class, [
+                'label' => 'Подразделение',
+                'mapped' => false,
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'Пожалуйста, выберите подразделение']),
+                ],
+                'attr' => [
+                    'class' => 'form-control',
+                    'style' => 'display: none;', // Скрываем, используем кастомный select
+                ],
+            ])
             ->add('avatarFile', FileType::class, [
                 'label' => 'Аватар (необязательно)',
                 'mapped' => false,
@@ -79,12 +103,27 @@ class RegistrationFormType extends AbstractType
                     'accept' => 'image/*',
                 ],
             ]);
+
+        // Обработка подразделения после submit
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event) {
+            $user = $event->getData();
+            $form = $event->getForm();
+            $departmentId = $form->get('departmentId')->getData();
+
+            if ($departmentId && $departmentId !== '__new__') {
+                $department = $this->dm->getRepository(Department::class)->find($departmentId);
+                if ($department) {
+                    $user->setDepartment($department);
+                }
+            }
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'csrf_protection' => false,
         ]);
     }
 }

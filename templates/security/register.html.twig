@@ -1,32 +1,71 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Регистрация{% endblock %}
+{% block title %}Регистрация нового пользователя{% endblock %}
 
 {% block body %}
     <div class="row">
         <div class="col-md-6 offset-md-3">
             <div class="card mt-5">
                 <div class="card-header">
-                    <h3>Регистрация</h3>
+                    <h3>Регистрация нового пользователя</h3>
                 </div>
                 <div class="card-body">
-                    {{ form_start(registrationForm, {'attr': {'enctype': 'multipart/form-data'}}) }}
+                    {{ form_start(registrationForm, {'attr': {'enctype': 'multipart/form-data', 'id': 'registration-form'}}) }}
+
                     {{ form_row(registrationForm.username) }}
                     {{ form_row(registrationForm.email) }}
                     {{ form_row(registrationForm.plainPassword) }}
 
+                    {# Скрытое поле для departmentId #}
+                    {{ form_widget(registrationForm.departmentId) }}
+
+                    {# Кастомный select для подразделения #}
+                    <div class="mb-3">
+                        <label for="custom-department-select" class="form-label">Подразделение</label>
+                        <select class="form-select" id="custom-department-select" required>
+                            <option value="">Выбирайте</option>
+                            <option value="__new__">➕ Создать новое</option>
+                        </select>
+                    </div>
+
                     {{ include('_partials/avatar_upload_zone.html.twig', {'form': registrationForm, 'field_name': 'avatarFile'}) }}
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                        <button type="submit" class="btn btn-primary">Создать пользователя</button>
                     </div>
-                    {{ form_end(registrationForm) }}
 
-                    <div class="mt-3 text-center">
-                        <p>Уже есть аккаунт? <a href="{{ path('login') }}">Войти</a></p>
-                    </div>
+                    {{ form_end(registrationForm) }}
                 </div>
             </div>
         </div>
     </div>
+
+    {# Модальное окно для создания подразделения #}
+    <div class="modal fade" id="newDepartmentModal" tabindex="-1" aria-labelledby="newDepartmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newDepartmentModalLabel">Создать новое подразделение</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="new-department-name" class="form-label">Название</label>
+                        <input type="text" class="form-control" id="new-department-name" placeholder="Введите название подразделения">
+                        <div class="invalid-feedback" id="department-error"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-primary" id="create-department-btn">Создать</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {# Передаём URL для AJAX в window #}
+    <script>
+        window.departmentsApiUrl = '{{ path('api_departments') }}';
+        window.departmentsCreateApiUrl = '{{ path('api_departments_create') }}';
+    </script>
 {% endblock %}

@@ -8,7 +8,7 @@
     {# Bootstrap CSS #}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    {# Bootstrap Icons - ДОБАВЬТЕ ЭТУ СТРОКУ #}
+    {# Bootstrap Icons #}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     {# Select2 CSS #}
@@ -55,6 +55,14 @@
                                     Опрос
                                 </a>
                             </li>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ path('register') }}">
+                                        Новый пользователь
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
 
@@ -93,9 +101,6 @@
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('login') }}">Войти</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('register') }}">Регистрация</a>
                     </li>
                 {% endif %}
             </ul>
