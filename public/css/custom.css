@@ -9,6 +9,7 @@ body {
     font-family: 'Times New Roman', Times, serif;
     background-color: #f5f5f5;
     color: #2b2b2b;
+    padding-top: 56px; /* Отступ для фиксированной навигации */
 }
 
 /* Заголовки */
@@ -22,9 +23,30 @@ hr {
     border-top: 1px solid #d0d0d0;
 }
 
+/* Ссылки */
+a {
+    color: #4a4a4a;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #2b2b2b;
+    text-decoration: underline;
+}
+
+/* Текст */
+.text-muted {
+    color: #8c8c8c !important;
+}
+
 /* === НАВИГАЦИЯ === */
 
 .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
     background-color: #2b2b2b !important;
     border-bottom: 2px solid #4a4a4a;
 }
@@ -35,6 +57,72 @@ hr {
 
 .nav-link:hover {
     color: #ffffff !important;
+}
+
+/* Dropdown на hover */
+.dropdown-hover {
+    position: relative;
+}
+
+.dropdown-hover .create-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1000;
+    min-width: 10rem;
+    margin-top: 0;
+}
+
+.dropdown-hover:hover .create-dropdown {
+    display: block;
+    animation: fadeIn 0.15s ease-in;
+}
+
+/* Невидимый "мост" между кнопкой и меню */
+.dropdown-hover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: transparent;
+    z-index: 999;
+}
+
+/* Плавная анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.create-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.create-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Анимация вращения иконки + */
+.create-btn i {
+    transition: transform 0.3s ease;
+}
+
+.dropdown-hover:hover .create-btn i {
+    transform: rotate(45deg);
 }
 
 /* === КНОПКИ === */
@@ -128,6 +216,15 @@ hr {
     color: #4a4a4a !important;
 }
 
+/* Карточки записей */
+.post-item {
+    transition: box-shadow 0.2s;
+}
+
+.post-item:hover {
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
 /* === АЛЕРТЫ === */
 
 .alert-success {
@@ -189,24 +286,6 @@ select[multiple] option:checked {
     color: #ffffff;
 }
 
-/* === ССЫЛКИ === */
-
-a {
-    color: #4a4a4a;
-    text-decoration: none;
-}
-
-a:hover {
-    color: #2b2b2b;
-    text-decoration: underline;
-}
-
-/* === ТЕКСТ === */
-
-.text-muted {
-    color: #8c8c8c !important;
-}
-
 /* === СПИСКИ === */
 
 .list-group-item {
@@ -217,6 +296,24 @@ a:hover {
 
 .list-group-item:hover {
     background-color: #f5f5f5;
+}
+
+/* Список разделов колонками */
+.categories-columns {
+    column-width: 250px;
+    column-gap: 30px;
+    max-height: calc(100vh - 400px);
+}
+
+.categories-columns ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.categories-columns li {
+    break-inside: avoid;
+    margin-bottom: 8px;
 }
 
 /* === ТАБЛИЦЫ === */
@@ -251,8 +348,7 @@ table {
    ЗАГРУЗКА ФАЙЛОВ
    ============================================ */
 
-/* === DRAG & DROP ДЛЯ ФАЙЛОВ БЛОГА === */
-
+/* Drag & Drop для файлов блога */
 .file-upload-area {
     border: 2px dashed #b0b0b0;
     border-radius: 8px;
@@ -310,8 +406,7 @@ table {
     color: #a71d2a;
 }
 
-/* === DRAG & DROP ДЛЯ АВАТАРА === */
-
+/* Drag & Drop для аватара */
 .avatar-upload-area {
     border: 2px dashed #b0b0b0;
     border-radius: 8px;
@@ -364,7 +459,6 @@ table {
    SELECT2 СТИЛИ
    ============================================ */
 
-/* Стили для Select2 в теме Bootstrap 5 */
 .select2-container--bootstrap-5 .select2-selection {
     border-color: #b0b0b0 !important;
     font-family: 'Times New Roman', Times, serif;
@@ -412,13 +506,12 @@ table {
     line-height: 1;
 }
 
-/* Скрыть бейдж если 0 */
 .notification-badge[data-count="0"] {
     display: none !important;
 }
 
 /* ============================================
-   БЛОГ: FIXED ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ
+   БЛОГ: ФОРМА ДОБАВЛЕНИЯ ЗАПИСИ
    ============================================ */
 
 .post-form-container {
@@ -457,99 +550,7 @@ table {
     z-index: 1100;
 }
 
-/* Карточки записей */
-.post-item {
-    transition: box-shadow 0.2s;
-}
-
-.post-item:hover {
-    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
-}
-
 /* Иконка меню */
 .bi-three-dots-vertical {
     cursor: pointer;
-}
-/* Dropdown на hover */
-.dropdown-hover {
-    position: relative;
-}
-
-.dropdown-hover .create-dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    z-index: 1000;
-    min-width: 10rem;
-    margin-top: 0; /* Убрали зазор */
-}
-
-.dropdown-hover:hover .create-dropdown {
-    display: block;
-    animation: fadeIn 0.15s ease-in;
-}
-
-/* Невидимый "мост" между кнопкой и меню */
-.dropdown-hover::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    height: 8px;
-    background: transparent;
-    z-index: 999;
-}
-
-/* Плавная анимация появления */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.create-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    transition: all 0.3s ease;
-}
-
-.create-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.8);
-}
-
-/* Анимация вращения иконки + */
-.create-btn i {
-    transition: transform 0.3s ease;
-}
-
-.dropdown-hover:hover .create-btn i {
-    transform: rotate(45deg);
-}
-
-/* Список разделов колонками */
-.categories-columns {
-    column-width: 250px;
-    column-gap: 30px;
-    max-height: calc(100vh - 400px); /* Высота до нижнего края минус отступы */
-}
-
-.categories-columns ul {
-    list-style-type: disc;
-    padding-left: 20px;
-    margin: 0;
-}
-
-.categories-columns li {
-    break-inside: avoid; /* Не разрывать элементы между колонками */
-    margin-bottom: 8px;
 }
