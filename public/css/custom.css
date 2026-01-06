@@ -470,7 +470,6 @@ table {
 .bi-three-dots-vertical {
     cursor: pointer;
 }
-
 /* Dropdown на hover */
 .dropdown-hover {
     position: relative;
@@ -483,11 +482,36 @@ table {
     right: 0;
     z-index: 1000;
     min-width: 10rem;
-    margin-top: 0.125rem;
+    margin-top: 0; /* Убрали зазор */
 }
 
 .dropdown-hover:hover .create-dropdown {
     display: block;
+    animation: fadeIn 0.15s ease-in;
+}
+
+/* Невидимый "мост" между кнопкой и меню */
+.dropdown-hover::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: transparent;
+    z-index: 999;
+}
+
+/* Плавная анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .create-btn {
@@ -510,4 +534,22 @@ table {
 
 .dropdown-hover:hover .create-btn i {
     transform: rotate(45deg);
+}
+
+/* Список разделов колонками */
+.categories-columns {
+    column-width: 250px;
+    column-gap: 30px;
+    max-height: calc(100vh - 400px); /* Высота до нижнего края минус отступы */
+}
+
+.categories-columns ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+}
+
+.categories-columns li {
+    break-inside: avoid; /* Не разрывать элементы между колонками */
+    margin-bottom: 8px;
 }

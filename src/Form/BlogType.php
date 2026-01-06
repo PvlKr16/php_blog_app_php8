@@ -6,6 +6,7 @@ use App\Document\Blog;
 use App\Document\Category;
 use App\Document\User;
 use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -54,10 +55,14 @@ class BlogType extends AbstractType
             ->add('category', DocumentType::class, [
                 'class' => Category::class,
                 'choice_label' => 'name',
-                'label' => 'Тема',
-                'placeholder' => 'Выберите тему',
+                'label' => 'Раздел',
+                'placeholder' => 'Выберите раздел',
                 'required' => false,
                 'attr' => ['class' => 'form-control'],
+                'query_builder' => function (DocumentRepository $repo) {
+                    return $repo->createQueryBuilder()
+                        ->sort('name', 'ASC');
+                },
             ])
             ->add('status', ChoiceType::class, [
                 'label' => 'Статус блога',

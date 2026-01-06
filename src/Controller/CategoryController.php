@@ -17,7 +17,8 @@ class CategoryController extends AbstractController
     #[Route('/', name: 'category_list', methods: ['GET'])]
     public function index(DocumentManager $dm): Response
     {
-        $categories = $dm->getRepository(Category::class)->findAll();
+        // Получаем все категории и сортируем по имени в алфавитном порядке
+        $categories = $dm->getRepository(Category::class)->findBy([], ['name' => 'ASC']);
 
         return $this->render('category/index.html.twig', [
             'categories' => $categories,
@@ -36,19 +37,8 @@ class CategoryController extends AbstractController
             $dm->persist($category);
             $dm->flush();
 
-            $this->addFlash('success', 'Тема успешно создана!');
+            $this->addFlash('success', 'Раздел успешно создан!');
         }
-
-        return $this->redirectToRoute('category_list');
-    }
-
-    #[Route('/{id}/delete', name: 'category_delete', methods: ['POST'])]
-    public function delete(Category $category, DocumentManager $dm): Response
-    {
-        $dm->remove($category);
-        $dm->flush();
-
-        $this->addFlash('success', 'Тема удалена!');
 
         return $this->redirectToRoute('category_list');
     }
