@@ -10,7 +10,7 @@
                     <h3>Редактировать профиль</h3>
                 </div>
                 <div class="card-body">
-                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'profile-form'}}) }}
+                    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
 
                     {{ form_row(form.username) }}
                     {{ form_row(form.email) }}
@@ -21,10 +21,9 @@
                         <label class="form-label">Текущий аватар</label>
                         <div>
                             {% if user.avatar %}
-                                <img src="/uploads/avatars/{{ user.avatar }}" alt="Avatar" class="current-avatar-preview" id="currentAvatar">
-                                <button type="button" class="btn btn-sm btn-danger" onclick="if(confirm('Удалить аватар?')) { window.location.href='{{ path('profile_avatar_delete') }}'; }">
-                                    Удалить аватар
-                                </button>
+                                <div class="mb-3">
+                                    <img src="/uploads/avatars/{{ user.avatar }}" alt="Avatar" class="current-avatar-preview" id="currentAvatar">
+                                </div>
                             {% else %}
                                 <p class="text-muted">Аватар не установлен</p>
                             {% endif %}
@@ -43,7 +42,17 @@
                         <button type="submit" class="btn btn-primary">Сохранить изменения</button>
                         <a href="{{ path('profile_view') }}" class="btn btn-secondary">Отмена</a>
                     </div>
+
                     {{ form_end(form) }}
+
+                    {% if user.avatar %}
+                        <hr class="mt-4">
+                        <form method="post" action="{{ path('profile_avatar_delete') }}" onsubmit="return confirm('Удалить аватар?');">
+                            <button type="submit" class="btn btn-danger">
+                                Удалить аватар
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>

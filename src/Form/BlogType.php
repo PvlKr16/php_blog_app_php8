@@ -122,6 +122,7 @@ class BlogType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Blog::class,
             'categories' => [],
+            'csrf_protection' => false,
         ]);
 
         $resolver->setAllowedTypes('categories', 'array');

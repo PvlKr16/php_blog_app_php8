@@ -34,6 +34,24 @@ class ProfileController extends AbstractController
         $form = $this->createForm(ProfileEditType::class, $user);
         $form->handleRequest($request);
 
+        if ($request->isMethod('POST')) {
+            error_log('POST request received');
+            error_log('Form submitted: ' . ($form->isSubmitted() ? 'YES' : 'NO'));
+
+            if ($form->isSubmitted()) {
+                error_log('Form valid: ' . ($form->isValid() ? 'YES' : 'NO'));
+
+                if (!$form->isValid()) {
+                    error_log('Form errors: ' . (string) $form->getErrors(true, false));
+                    foreach ($form->all() as $child) {
+                        if (!$child->isValid()) {
+                            error_log('Field "' . $child->getName() . '" errors: ' . (string) $child->getErrors(true, false));
+                        }
+                    }
+                }
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             // Обработка нового аватара
             /** @var UploadedFile $avatarFile */
