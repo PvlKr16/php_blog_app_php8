@@ -2,6 +2,7 @@
 
 namespace App\Document;
 
+use App\Document\Department;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,6 +40,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[MongoDB\Field(type: 'bool')]
     private bool $isAdmin = false;
+
+    #[MongoDB\ReferenceOne(targetDocument: Department::class)]
+    private ?Department $department = null;
 
     #[MongoDB\Field(type: 'date')]
     private \DateTime $createdAt;
@@ -204,4 +208,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = $createdAt;
         return $this;
     }
+
+    public function getDepartment(): ?Department
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?Department $department): static
+    {
+        $this->department = $department;
+        return $this;
+    }
+
 }

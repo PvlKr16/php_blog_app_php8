@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Подразделения{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Подразделения</h1>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Добавить новое</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ path('department_create') }}">
+                        <div class="input-group">
+                            <input type="text" name="name" class="form-control" placeholder="Название нового подразделения" required>
+                            <button type="submit" class="btn btn-primary">Добавить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5>Существующие подразделения</h5>
+                </div>
+                <div class="card-body">
+                    {% if departments is empty %}
+                        <p class="text-muted">Подразделений пока нет</p>
+                    {% else %}
+                        <div class="categories-columns">
+                            <ul>
+                                {% for department in departments %}
+                                    <li>{{ department.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

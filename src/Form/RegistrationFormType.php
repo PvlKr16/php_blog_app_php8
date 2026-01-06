@@ -2,7 +2,10 @@
 
 namespace App\Form;
 
+use App\Document\Department;
 use App\Document\User;
+use Doctrine\Bundle\MongoDBBundle\Form\Type\DocumentType;
+use Doctrine\ODM\MongoDB\Repository\DocumentRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -61,6 +64,21 @@ class RegistrationFormType extends AbstractType
                         'max' => 4096,
                     ]),
                 ],
+            ])
+            ->add('department', DocumentType::class, [
+                'class' => Department::class,
+                'choice_label' => 'name',
+                'label' => 'Подразделение',
+                'placeholder' => 'Выберите подразделение',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'Пожалуйста, выберите подразделение']),
+                ],
+                'attr' => ['class' => 'form-control'],
+                'query_builder' => function (DocumentRepository $repo) {
+                    return $repo->createQueryBuilder()
+                        ->sort('name', 'ASC');
+                },
             ])
             ->add('avatarFile', FileType::class, [
                 'label' => 'Аватар (необязательно)',
