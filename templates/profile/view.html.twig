@@ -29,6 +29,12 @@
                                     <th style="width: 30%;">Email:</th>
                                     <td>{{ user.email }}</td>
                                 </tr>
+                                {% if user.department %}
+                                    <tr>
+                                        <th>Подразделение:</th>
+                                        <td>{{ user.department.name }}</td>
+                                    </tr>
+                                {% endif %}
                                 {% if user.birthDate %}
                                     <tr>
                                         <th>Дата рождения:</th>

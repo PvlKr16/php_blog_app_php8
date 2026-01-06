@@ -13,19 +13,19 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class SecurityController extends AbstractController
 {
     #[Route('/register', name: 'register')]
+    #[IsGranted('ROLE_ADMIN')]
     public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         DocumentManager $dm,
         FileUploader $fileUploader
     ): Response {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('blog_list');
-        }
+        // Убрали проверку if ($this->getUser()) - админ может регистрировать будучи залогиненным
 
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
@@ -48,16 +48,16 @@ class SecurityController extends AbstractController
                     $avatarFileName = $fileUploader->upload($avatarFile);
                     $user->setAvatar($avatarFileName);
                 } catch (\Exception $e) {
-                    $this->addFlash('warning', 'Не удалось загрузить аватар, но регистрация прошла успешно.');
+                    $this->addFlash('warning', 'Не удалось загрузить аватар, но пользователь создан успешно.');
                 }
             }
 
             $dm->persist($user);
             $dm->flush();
 
-            $this->addFlash('success', 'Регистрация прошла успешно! Теперь вы можете войти.');
+            $this->addFlash('success', 'Пользователь создан успешно!');
 
-            return $this->redirectToRoute('login');
+            return $this->redirectToRoute('blog_list');
         }
 
         return $this->render('security/register.html.twig', [

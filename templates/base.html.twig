@@ -65,6 +65,9 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ path('department_list') }}">Подразделения</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ path('register') }}">Пользователи</a>
+                        </li>
                     {% endif %}
 
                     {# Колокольчик с уведомлениями #}
@@ -96,9 +99,6 @@
                 {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ path('login') }}">Войти</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ path('register') }}">Регистрация</a>
                     </li>
                 {% endif %}
             </ul>
