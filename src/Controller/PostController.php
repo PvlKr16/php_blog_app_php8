@@ -234,18 +234,31 @@ class PostController extends AbstractController
             $title = $request->request->get('title', '');
             $content = $request->request->get('content', '');
 
-            if (empty($title) && empty($content)) {
-                return $this->json(['success' => false, 'error' => 'Заголовок или содержание обязательны'], 400);
+            // ОТЛАДКА
+            error_log('=== POST DATA DEBUG ===');
+            error_log('Title from request: "' . $title . '"');
+            error_log('Content from request: "' . $content . '"');
+            error_log('Title empty: ' . (empty($title) ? 'YES' : 'NO'));
+
+            if (empty($content)) {
+                return $this->json(['success' => false, 'error' => 'Содержание обязательно'], 400);
             }
 
             $post = new Post();
-            $post->setTitle($title ?: 'Без заголовка');
+            if (!empty($title)) {
+                error_log('Setting title: "' . $title . '"');
+                $post->setTitle($title);
+            } else {
+                error_log('Title is empty, not setting it');
+            }
             $post->setContent($content);
             $post->setBlog($blog);
             $post->setAuthor($this->getUser());
 
             $dm->persist($post);
             $dm->flush();
+
+            error_log('Post saved with title: "' . ($post->getTitle() ?? 'NULL') . '"');
 
             // Обработка вложений
             $attachmentFiles = $request->files->get('attachments', []);
@@ -306,7 +319,7 @@ class PostController extends AbstractController
                         'username' => $this->getUser()->getUsername(),
                         'avatar' => $this->getUser()->getAvatar(),
                     ],
-                    'attachments' => $attachments, // ДОБАВЛЕНО
+                    'attachments' => $attachments,
                     'canEdit' => true,
                     'url' => $this->generateUrl('post_show', ['id' => $post->getId()]),
                 ]

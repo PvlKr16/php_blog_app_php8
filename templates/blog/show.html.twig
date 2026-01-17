@@ -122,7 +122,9 @@
 
                     {# Контент записи #}
                     <div class="card-body">
-                        <h5 class="card-title">{{ post.title }}</h5>
+                        {% if post.title %}
+                            <h5 class="card-title">{{ post.title }}</h5>
+                        {% endif %}
                         <p class="card-text">{{ post.content|nl2br }}</p>
 
                         {# Файлы записи #}

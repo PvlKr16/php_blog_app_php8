@@ -419,13 +419,13 @@ async function submitPost() {
 
     const formData = new FormData();
     formData.append('content', content);
-    formData.append('title', content.substring(0, 50) || 'Без заголовка');
+    // Убрали строку с title - пусть заголовок остаётся пустым
 
     for (let file of fileInput.files) {
         formData.append('attachments[]', file);
     }
 
-    const url = `/post/blog/${blogId}/new/ajax`; // ← ИСПРАВИЛИ
+    const url = `/post/blog/${blogId}/new/ajax`;
 
     try {
         const response = await fetch(url, {
@@ -525,7 +525,7 @@ function addPostToList(post) {
                 </div>
             </div>
             <div class="card-body">
-                <h5 class="card-title">${escapeHtml(post.title)}</h5>
+                ${post.title ? `<h5 class="card-title">${escapeHtml(post.title)}</h5>` : ''}
                 <p class="card-text">${escapeHtml(post.content).replace(/\n/g, '<br>')}</p>
                 ${attachmentsHtml}
             </div>
