@@ -301,35 +301,53 @@ function updateNotificationCount() {
  * Инициализация страницы блога (если есть)
  */
 function initBlogShow() {
-    if (typeof window.blogShowData === 'undefined') {
+    // Проверяем что мы на странице блога
+    if (!window.blogShowData) {
         return;
     }
 
-    const addPostBtn = document.getElementById('add-post-btn');
-    const openFileUploadBtn = document.querySelector('.open-file-upload');
-    const fileInput = document.getElementById('post-file-input');
+    const blogId = window.blogShowData.blogId;
 
-    if (addPostBtn) {
-        addPostBtn.addEventListener('click', submitPost);
+    // Показать/скрыть кнопку отправки
+    const postInput = document.getElementById('post-content-input');
+    if (postInput) {
+        postInput.addEventListener('input', toggleSendButton);
     }
 
-    if (openFileUploadBtn && fileInput) {
-        openFileUploadBtn.addEventListener('click', function(e) {
+    // Кнопка отправки
+    const sendButton = document.getElementById('send-button');
+    if (sendButton) {
+        sendButton.addEventListener('click', submitPost);
+    }
+
+    // Открыть выбор файла
+    const openFileBtn = document.querySelector('.open-file-upload');
+    if (openFileBtn) {
+        openFileBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            fileInput.click();
+            document.getElementById('post-file-input').click();
         });
     }
 
+    // Обработка выбора файлов
+    const fileInput = document.getElementById('post-file-input');
     if (fileInput) {
-        fileInput.addEventListener('change', updateSelectedFiles);
+        fileInput.addEventListener('change', handlePostFileSelect);
     }
 
     // Копирование ссылок
-    document.querySelectorAll('.copy-link').forEach(link => {
+    document.querySelectorAll('.copy-link').forEach(function(link) {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const url = this.getAttribute('data-url');
             copyToClipboard(url);
+        });
+    });
+
+    // Отключить клики по disabled пунктам меню
+    document.querySelectorAll('.disabled-menu-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
         });
     });
 }
@@ -358,16 +376,17 @@ function updateSelectedFiles() {
 function toggleSendButton() {
     const input = document.getElementById('post-content-input');
     const fileInput = document.getElementById('post-file-input');
-    const sendBtn = document.getElementById('add-post-btn');
+    const sendButton = document.getElementById('send-button');
 
-    if (!input || !fileInput || !sendBtn) {
+    if (!input || !fileInput || !sendButton) {
         return;
     }
 
-    const hasContent = input.value.trim().length > 0;
-    const hasFiles = fileInput.files.length > 0;
-
-    sendBtn.disabled = !hasContent && !hasFiles;
+    if (input.value.trim().length > 0 || fileInput.files.length > 0) {
+        sendButton.style.display = 'flex';
+    } else {
+        sendButton.style.display = 'none';
+    }
 }
 
 /**
