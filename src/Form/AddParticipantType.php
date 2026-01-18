@@ -34,6 +34,7 @@ class AddParticipantType extends AbstractType
     {
         $resolver->setDefaults([
             'existing_participants' => [],
+            'csrf_protection' => false, // ← ДОБАВЛЕНО
         ]);
     }
 }
